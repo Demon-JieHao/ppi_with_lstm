@@ -2,6 +2,7 @@ import numpy as np
 import gzip
 import pickle
 import tensorflow as tf
+from datetime import datetime
 
 
 def encoder(protein, how, prot_max_len, num_aa):
@@ -39,6 +40,9 @@ def batch_generator(x1, x2, y, batch_size, how,
         start += batch_size
 
 
+now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+log_dir = 'tf_logs/cnn_1d' + now
+
 max_protein_length = 500
 n_aas = 21
 
@@ -57,6 +61,12 @@ n_fc1 = 128
 n_epochs = 5
 learning_rate = 0.01
 batch_size = 128
+
+pool_size = 10
+max_pool_strides = 10
+
+dropout_rate1 = 0.5
+dropout_rate2 = 0.5
 
 he_init = tf.contrib.layers.variance_scaling_initializer()
 
@@ -81,6 +91,7 @@ x2 = tf.placeholder(dtype=tf.float32,
                     shape=(None, max_protein_length, n_aas),
                     name='x2')
 y = tf.placeholder(tf.int64, shape=(None, 1), name='y')
+training = tf.placeholder(tf.bool, shape=(), name='dropout')
 
 # We create two convolutional layers that are forced to have the same weights
 with tf.name_scope('first_conv'):
@@ -111,7 +122,8 @@ with tf.name_scope('merge'):
     merged = tf.reduce_mean([conv3, conv4], axis=0)
 
 with tf.name_scope('max_pool'):
-    max_pool = tf.layers.max_pooling1d(merged, pool_size=10, strides=10,
+    max_pool = tf.layers.max_pooling1d(merged, pool_size=pool_size,
+                                       strides=max_pool_strides,
                                        name='max_pool')
     max_pool_shape = max_pool.get_shape()
     max_pool_flat = tf.reshape(
@@ -121,9 +133,13 @@ with tf.name_scope('max_pool'):
 with tf.name_scope('fully_connected'):
     hidden1 = tf.layers.dense(max_pool_flat, units=128, activation=tf.nn.relu,
                               kernel_initializer=he_init, name='hidden1')
-    hidden2 = tf.layers.dense(hidden1, units=64, activation=tf.nn.relu,
+    dropout1 = tf.layers.dropout(hidden1, rate=dropout_rate1,
+                                 name='dropout1', training=training)
+    hidden2 = tf.layers.dense(dropout1, units=64, activation=tf.nn.relu,
                               kernel_initializer=he_init, name='hidden2')
-    logits = tf.layers.dense(hidden2, units=1,
+    dropout2 = tf.layers.dropout(hidden2, rate=dropout_rate2,
+                                 name='dropout2', training=training)
+    logits = tf.layers.dense(dropout2, units=1,
                              kernel_initializer=he_init, name='logits')
 
 with tf.name_scope('loss'):
@@ -134,10 +150,14 @@ with tf.name_scope('loss'):
 with tf.name_scope('train'):
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     training_op = optimizer.minimize(loss)
-    # predicted = tf.greater(logits, 0.5)
-    # accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
+    prediction = tf.cast(tf.greater(logits, 0.5), dtype=tf.int64)
+    correct = tf.equal(prediction, y)
+    accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
 
 init = tf.global_variables_initializer()
+accuracy_summary = tf.summary.scalar('accuracy', accuracy)
+train_writer = tf.summary.FileWriter(log_dir + '_train',
+                                     tf.get_default_graph())
 
 
 with tf.Session() as sess:
@@ -146,15 +166,20 @@ with tf.Session() as sess:
     step = 0
 
     for epoch in range(n_epochs):
-        batch_num = 1
         print('epoch: {}'.format(epoch))
         batchgen = batch_generator(X1_train, X2_train,
                                    Y_train, batch_size,
                                    'ohe', 500, 21)
         for x1b, x2b, yb in batchgen:
-            sess.run(training_op, feed_dict={x1: x1b, x2: x2b, y: yb})
-            if batch_num % 50 == 0:
-                current_loss = sess.run(loss,
-                                        feed_dict={x1: x1b, x2: x2b, y: yb})
-                print('Current loss = {}'.format(current_loss))
-            batch_num += 1
+            if step % 100 == 0:
+                # train_acc = accuracy_summary.eval(
+                #     feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+                # train_writer.add_summary(train_acc, step)
+                acc, current_loss = sess.run(
+                    [accuracy, loss],
+                    feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+                print('Step=', step, 'Training accuracy=', acc,
+                      'Training loss=', current_loss)
+            step += 1
+            sess.run(training_op,
+                     feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
