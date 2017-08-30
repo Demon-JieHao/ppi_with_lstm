@@ -9,10 +9,12 @@ def encoder(protein, how, prot_max_len, num_aa):
     return z
 
 
-
 def batch_encoder(protein_list, how, prot_max_len, num_aa):
     num_proteins = len(protein_list)
-    z = np.zeros((num_proteins, prot_max_len, num_aa))
+    if how == 'ohe':
+        z = np.zeros((num_proteins, prot_max_len, num_aa))
+    else:
+        z = np.zeros((num_proteins, num_aa, prot_max_len))
     for i in np.arange(num_proteins):
         z[i] = encoder(protein_list[i], how, prot_max_len, num_aa)
     return z
