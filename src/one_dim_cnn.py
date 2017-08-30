@@ -66,7 +66,7 @@ pool_size = 10
 max_pool_strides = 10
 
 dropout_rate1 = 0.5
-dropout_rate2 = 0.5
+dropout_rate2 = 0.4
 
 he_init = tf.contrib.layers.variance_scaling_initializer()
 
@@ -183,3 +183,15 @@ with tf.Session() as sess:
             step += 1
             sess.run(training_op,
                      feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+
+        # Full pass over the dev set
+        n_dev_batches = int(np.ceil(len(Y_dev) / batch_size))
+        dev_batchgen = batch_generator(X1_dev, X2_dev, Y_dev, batch_size,
+                                       'ohe', 500, 21)
+        mean_dev_acc = 0
+        for x1d, x2d, yd in dev_batchgen:
+            dev_acc = sess.run(accuracy,
+                               feed_dict={x1: x1d, x2: x2d, y: yd,
+                                          training: False})
+            mean_dev_acc += dev_acc
+        print('Test accuracy =', mean_dev_acc/n_dev_batches)
