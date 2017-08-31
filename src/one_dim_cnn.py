@@ -72,7 +72,7 @@ he_init = tf.contrib.layers.variance_scaling_initializer()
 
 # Load the dataset still in a list form
 X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
-Y = Y.reshape(Y.shape[0], 1)
+# Y = Y.reshape(Y.shape[0], 1)
 
 # Create training, dev and test set
 X1_train, X2_train, Y_train = X1[:-20000], X2[:-20000], Y[:-20000]
@@ -90,20 +90,23 @@ x1 = tf.placeholder(dtype=tf.float32,
 x2 = tf.placeholder(dtype=tf.float32,
                     shape=(None, max_protein_length, n_aas),
                     name='x2')
-y = tf.placeholder(tf.int64, shape=(None, 1), name='y')
+y = tf.placeholder(tf.int64, shape=(None), name='y')
 training = tf.placeholder(tf.bool, shape=(), name='dropout')
 
 # We create two convolutional layers that are forced to have the same weights
 with tf.name_scope('first_conv'):
-    conv1 = tf.layers.conv1d(x1, filters=conv1_fmaps, kernel_size=conv1_ksize,
+    conv1 = tf.layers.conv1d(x1, filters=conv1_fmaps,
+                             kernel_size=conv1_ksize,
                              strides=conv1_stride, padding=conv1_pad,
                              kernel_initializer=he_init,
                              activation=tf.nn.relu, name='conv1')
 
-    conv2 = tf.layers.conv1d(x2, filters=conv1_fmaps, kernel_size=conv1_ksize,
+    conv2 = tf.layers.conv1d(x2, filters=conv1_fmaps,
+                             kernel_size=conv1_ksize,
                              strides=conv1_stride, padding=conv1_pad,
                              kernel_initializer=he_init,
-                             activation=tf.nn.relu, name='conv1', reuse=True)
+                             activation=tf.nn.relu, name='conv1',
+                             reuse=True)
 
 with tf.name_scope('second_conv'):
     conv3 = tf.layers.conv1d(conv1, filters=conv1_fmaps,
@@ -139,19 +142,18 @@ with tf.name_scope('fully_connected'):
                               kernel_initializer=he_init, name='hidden2')
     dropout2 = tf.layers.dropout(hidden2, rate=dropout_rate2,
                                  name='dropout2', training=training)
-    logits = tf.layers.dense(dropout2, units=1,
+    logits = tf.layers.dense(dropout2, units=2,
                              kernel_initializer=he_init, name='logits')
 
 with tf.name_scope('loss'):
     xentropy = tf.nn.sigmoid_cross_entropy_with_logits(
-        labels=tf.cast(y, tf.float32), logits=logits)
+        labels=y, logits=logits)
     loss = tf.reduce_mean(xentropy)
 
 with tf.name_scope('train'):
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     training_op = optimizer.minimize(loss)
-    prediction = tf.cast(tf.greater(logits, 0.5), dtype=tf.int64)
-    correct = tf.equal(prediction, y)
+    correct = tf.nn.in_top_k(logits, y, 1)
     accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
 
 init = tf.global_variables_initializer()

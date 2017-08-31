@@ -4,6 +4,31 @@ import pickle
 import tensorflow as tf
 from datetime import datetime
 
+now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+log_dir = 'tf_logs/cnn_1d' + now
+
+max_protein_length = 500
+n_aas = 21
+
+conv1_fmaps = 16
+conv1_ksize = 5
+conv1_stride = 1
+conv1_pad = 'VALID'
+
+n_fc1 = 128
+
+n_epochs = 5
+learning_rate = 0.01
+batch_size = 128
+
+pool_size = 10
+max_pool_strides = 10
+
+dropout_rate1 = 0.5
+dropout_rate2 = 0.5
+
+he_init = tf.contrib.layers.variance_scaling_initializer()
+
 
 def encoder(protein, how, prot_max_len, num_aa):
     z = np.zeros((prot_max_len, num_aa), dtype='float32')
@@ -40,39 +65,9 @@ def batch_generator(x1, x2, y, batch_size, how,
         start += batch_size
 
 
-now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-log_dir = 'tf_logs/cnn_1d' + now
-
-max_protein_length = 500
-n_aas = 21
-
-conv1_fmaps = 16
-conv1_ksize = 5
-conv1_stride = 1
-conv1_pad = 'VALID'
-
-conv2_fmaps = 16
-conv2_ksize = 10
-conv2_stride = 2
-conv2_pad = 'VALID'
-
-n_fc1 = 128
-
-n_epochs = 5
-learning_rate = 0.01
-batch_size = 128
-
-pool_size = 10
-max_pool_strides = 10
-
-dropout_rate1 = 0.5
-dropout_rate2 = 0.4
-
-he_init = tf.contrib.layers.variance_scaling_initializer()
-
 # Load the dataset still in a list form
 X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
-Y = Y.reshape(Y.shape[0], 1)
+# Y = Y.reshape(Y.shape[0], 1)
 
 # Create training, dev and test set
 X1_train, X2_train, Y_train = X1[:-20000], X2[:-20000], Y[:-20000]
@@ -90,7 +85,7 @@ x1 = tf.placeholder(dtype=tf.float32,
 x2 = tf.placeholder(dtype=tf.float32,
                     shape=(None, max_protein_length, n_aas),
                     name='x2')
-y = tf.placeholder(tf.int64, shape=(None, 1), name='y')
+y = tf.placeholder(tf.int64, shape=(None), name='y')
 training = tf.placeholder(tf.bool, shape=(), name='dropout')
 
 # We create two convolutional layers that are forced to have the same weights
@@ -105,21 +100,8 @@ with tf.name_scope('first_conv'):
                              kernel_initializer=he_init,
                              activation=tf.nn.relu, name='conv1', reuse=True)
 
-with tf.name_scope('second_conv'):
-    conv3 = tf.layers.conv1d(conv1, filters=conv1_fmaps,
-                             kernel_size=conv2_ksize,
-                             strides=conv1_stride, padding=conv1_pad,
-                             kernel_initializer=he_init,
-                             activation=tf.nn.relu, name='conv3')
-
-    conv4 = tf.layers.conv1d(conv2, filters=conv1_fmaps,
-                             kernel_size=conv2_ksize,
-                             strides=conv1_stride, padding=conv1_pad,
-                             kernel_initializer=he_init,
-                             activation=tf.nn.relu, name='conv3', reuse=True)
-
 with tf.name_scope('merge'):
-    merged = tf.reduce_mean([conv3, conv4], axis=0)
+    merged = tf.reduce_mean([conv1, conv2], axis=0)
 
 with tf.name_scope('max_pool'):
     max_pool = tf.layers.max_pooling1d(merged, pool_size=pool_size,
@@ -139,19 +121,18 @@ with tf.name_scope('fully_connected'):
                               kernel_initializer=he_init, name='hidden2')
     dropout2 = tf.layers.dropout(hidden2, rate=dropout_rate2,
                                  name='dropout2', training=training)
-    logits = tf.layers.dense(dropout2, units=1,
+    logits = tf.layers.dense(dropout2, units=2,
                              kernel_initializer=he_init, name='logits')
 
 with tf.name_scope('loss'):
-    xentropy = tf.nn.sigmoid_cross_entropy_with_logits(
-        labels=tf.cast(y, tf.float32), logits=logits)
+    xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+        labels=y, logits=logits)
     loss = tf.reduce_mean(xentropy)
 
 with tf.name_scope('train'):
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     training_op = optimizer.minimize(loss)
-    prediction = tf.cast(tf.greater(logits, 0.5), dtype=tf.int64)
-    correct = tf.equal(prediction, y)
+    correct = tf.nn.in_top_k(logits, y, 1)
     accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
 
 init = tf.global_variables_initializer()
@@ -171,18 +152,16 @@ with tf.Session() as sess:
                                    Y_train, batch_size,
                                    'ohe', 500, 21)
         for x1b, x2b, yb in batchgen:
-            if step % 100 == 0:
-                # train_acc = accuracy_summary.eval(
-                #     feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
-                # train_writer.add_summary(train_acc, step)
-                acc, current_loss = sess.run(
-                    [accuracy, loss],
-                    feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
-                print('Step=', step, 'Training accuracy=', acc,
-                      'Training loss=', current_loss)
-            step += 1
             sess.run(training_op,
                      feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+            if step % 100 == 0:
+                train_acc, train_loss = sess.run(
+                    [accuracy, loss],
+                    feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+                print('Step:', step,
+                      'Train loss:', train_loss,
+                      'Train acc:', train_acc)
+            step += 1
 
         # Full pass over the dev set
         n_dev_batches = int(np.ceil(len(Y_dev) / batch_size))
@@ -194,4 +173,4 @@ with tf.Session() as sess:
                                feed_dict={x1: x1d, x2: x2d, y: yd,
                                           training: False})
             mean_dev_acc += dev_acc
-        print('Test accuracy =', mean_dev_acc/n_dev_batches)
+        print('Test accuracy =', mean_dev_acc / n_dev_batches)
