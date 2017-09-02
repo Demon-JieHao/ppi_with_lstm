@@ -1,8 +1,10 @@
+from __future__ import division, print_function, unicode_literals
 import numpy as np
 import gzip
 import pickle
 import tensorflow as tf
 from datetime import datetime
+
 
 now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
 log_dir = 'tf_logs/cnn_1d' + now
@@ -10,19 +12,20 @@ log_dir = 'tf_logs/cnn_1d' + now
 max_protein_length = 500
 n_aas = 21
 
-conv1_fmaps = 16
-conv1_ksize = 5
+conv1_fmaps = 32
+conv1_ksize = 3
 conv1_stride = 1
 conv1_pad = 'VALID'
 
-n_fc1 = 128
+n_fc1 = 256
+n_fc2 = 128
 
-n_epochs = 5
+n_epochs = 30
 learning_rate = 0.01
 batch_size = 128
 
-pool_size = 10
-max_pool_strides = 10
+pool_size = 5
+max_pool_strides = 5
 
 dropout_rate1 = 0.5
 dropout_rate2 = 0.5
@@ -113,11 +116,11 @@ with tf.name_scope('max_pool'):
         (-1, max_pool_shape[1].value * max_pool_shape[2].value))
 
 with tf.name_scope('fully_connected'):
-    hidden1 = tf.layers.dense(max_pool_flat, units=128, activation=tf.nn.relu,
+    hidden1 = tf.layers.dense(max_pool_flat, units=n_fc1, activation=tf.nn.relu,
                               kernel_initializer=he_init, name='hidden1')
     dropout1 = tf.layers.dropout(hidden1, rate=dropout_rate1,
                                  name='dropout1', training=training)
-    hidden2 = tf.layers.dense(dropout1, units=64, activation=tf.nn.relu,
+    hidden2 = tf.layers.dense(dropout1, units=n_fc2, activation=tf.nn.relu,
                               kernel_initializer=he_init, name='hidden2')
     dropout2 = tf.layers.dropout(hidden2, rate=dropout_rate2,
                                  name='dropout2', training=training)
@@ -136,34 +139,45 @@ with tf.name_scope('train'):
     accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
 
 init = tf.global_variables_initializer()
-accuracy_summary = tf.summary.scalar('accuracy', accuracy)
-train_writer = tf.summary.FileWriter(log_dir + '_train',
-                                     tf.get_default_graph())
+# accuracy_summary = tf.summary.scalar('accuracy', accuracy)
+# train_writer = tf.summary.FileWriter(log_dir + '_train',
+#                                      tf.get_default_graph())
 
 
 with tf.Session() as sess:
     sess.run(init)
     n_batches = int(np.ceil(len(Y_train) / batch_size))
-    step = 0
 
     for epoch in range(n_epochs):
-        print('epoch: {}'.format(epoch))
-        batchgen = batch_generator(X1_train, X2_train,
-                                   Y_train, batch_size,
-                                   'ohe', 500, 21)
+
+        mean_train_acc = 0
+        mean_train_loss = 0
+        
+        batchgen = batch_generator(X1_train, X2_train, Y_train,
+                                   batch_size, 'ohe', 500, 21)
+
+        # Full pass on the training set
         for x1b, x2b, yb in batchgen:
+
+            # Training step
             sess.run(training_op,
                      feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
-            if step % 100 == 0:
-                train_acc, train_loss = sess.run(
-                    [accuracy, loss],
-                    feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
-                print('Step:', step,
-                      'Train loss:', train_loss,
-                      'Train acc:', train_acc)
-            step += 1
+
+            # Mini-batch accuracy and loss
+            train_acc, train_loss = sess.run(
+                [accuracy, loss],
+                feed_dict={x1: x1b, x2: x2b, y: yb, training: True})
+
+            mean_train_acc += train_acc
+            mean_train_loss += train_loss
+
+        # Epoch-wise mean loss and accuracy
+        print('Epoch:', epoch,
+              'Train loss:', mean_train_loss / n_batches,
+              'Train acc:', mean_train_acc / n_batches)
 
         # Full pass over the dev set
+        
         n_dev_batches = int(np.ceil(len(Y_dev) / batch_size))
         dev_batchgen = batch_generator(X1_dev, X2_dev, Y_dev, batch_size,
                                        'ohe', 500, 21)
@@ -173,4 +187,4 @@ with tf.Session() as sess:
                                feed_dict={x1: x1d, x2: x2d, y: yd,
                                           training: False})
             mean_dev_acc += dev_acc
-        print('Test accuracy =', mean_dev_acc / n_dev_batches)
+        print('Test acc. =', mean_dev_acc / n_dev_batches)
