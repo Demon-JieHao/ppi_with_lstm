@@ -1,8 +1,10 @@
+from __future__ import division, print_function, unicode_literals
 import numpy as np
 import gzip
 import pickle
 import tensorflow as tf
 from datetime import datetime
+
 
 now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
 log_dir = 'tf_logs/cnn_1d' + now
@@ -11,15 +13,16 @@ max_protein_length = 500
 n_aas = 21
 
 conv1_fmaps = 32
-conv1_ksize = 5
+conv1_ksize = 3
 conv1_stride = 1
 conv1_pad = 'VALID'
 
-n_fc1 = 128
+n_fc1 = 256
 n_fc2 = 128
 
-n_epochs = 50
-learning_rate = 0.001
+n_epochs = 30
+learning_rate = 0.01
+
 batch_size = 128
 
 pool_size = 5
@@ -125,6 +128,7 @@ with tf.name_scope('fully_connected'):
                               activation=tf.nn.relu,
                               kernel_initializer=he_init,
                               name='hidden2')
+
     dropout2 = tf.layers.dropout(hidden2, rate=dropout_rate2,
                                  name='dropout2', training=training)
     logits = tf.layers.dense(dropout2, units=2,
@@ -142,6 +146,7 @@ with tf.name_scope('train'):
     accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
 
 init = tf.global_variables_initializer()
+
 acc_summary = tf.summary.scalar('accuracy', accuracy)
 train_writer = tf.summary.FileWriter(log_dir + '_train',
                                      tf.get_default_graph())
@@ -151,6 +156,7 @@ dev_writer = tf.summary.FileWriter(log_dir + '_dev',
 
 with tf.Session() as sess:
     sess.run(init)
+
     n_train_batches = int(np.ceil(len(Y_train) / batch_size))
     n_dev_batches = int(np.ceil(len(Y_dev) / batch_size))
     step = 0
