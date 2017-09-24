@@ -13,15 +13,15 @@ max_protein_length = 500
 n_aas = 21
 
 conv1_fmaps = 32
-conv1_ksize = 3
+conv1_ksize = 5
 conv1_stride = 1
 conv1_pad = 'VALID'
 
 n_fc1 = 256
-n_fc2 = 128
+n_fc2 = 256
 
-n_epochs = 30
-learning_rate = 0.01
+n_epochs = 60
+learning_rate = 0.001
 
 batch_size = 128
 
