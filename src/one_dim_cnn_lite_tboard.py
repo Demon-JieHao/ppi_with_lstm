@@ -5,7 +5,7 @@ import tensorflow as tf
 from datetime import datetime
 
 now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-log_dir = 'tf_logs/cnn_1d' + now
+log_dir = '/da/dmp/cb/dariogi1/projects/2017/ppi_with_lstm/src/tf_logs/cnn_1d_tboard' + now
 
 max_protein_length = 500
 n_aas = 21
@@ -67,7 +67,7 @@ def batch_generator(x1, x2, y, batch_size, how,
 
 
 # Load the dataset still in a list form
-X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
+X1, X2, Y = pickle.load(gzip.open('/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/create_dataset.pkl.gzip', 'r'))
 # Y = Y.reshape(Y.shape[0], 1)
 
 # Create training, dev and test set

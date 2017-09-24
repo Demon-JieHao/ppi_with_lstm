@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-log_dir = 'tf_logs/cnn_1d' + now
+log_dir = '/da/dmp/cb/dariogi1/projects/2017/ppi_with_lstm/src/tf_logs/cnn_1d' + now
 
 max_protein_length = 500
 n_aas = 21
@@ -20,7 +20,8 @@ conv1_pad = 'VALID'
 n_fc1 = 256
 n_fc2 = 256
 
-n_epochs = 60
+n_epochs = 50
+
 learning_rate = 0.001
 
 batch_size = 128
@@ -70,8 +71,10 @@ def batch_generator(x1, x2, y, batch_size, how,
 
 
 # Load the dataset still in a list form
-X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
+# X1, X2, Y = pickle.load(gzip.open('/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/create_dataset.pkl.gzip', 'r'))
 # Y = Y.reshape(Y.shape[0], 1)
+
+X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
 
 # Create training, dev and test set
 X1_train, X2_train, Y_train = X1[:-20000], X2[:-20000], Y[:-20000]

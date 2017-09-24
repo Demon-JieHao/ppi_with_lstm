@@ -7,17 +7,21 @@ from datetime import datetime
 
 
 now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+
 log_dir = 'tf_logs/test_1d_two_layers' + now
+
+# log_dir = '/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/src/tf_logs/one_dim_cnn' + now
+
 
 max_protein_length = 500
 n_aas = 21
 
 # Convolutional parameters
-conv1_fmaps = 16   #  N. feature maps in the 1st conv. layer
-conv2_fmaps = 32  #  N. feature maps in the 2nd conv. layer
-conv1_ksize = 3   #  Size of the receptive field in both conv. layers.
+conv1_fmaps = 16  # N. feature maps in the 1st conv. layer
+conv2_fmaps = 32  # N. feature maps in the 2nd conv. layer
+conv1_ksize = 3   # Size of the receptive field in both conv. layers.
 conv2_ksize = 5
-conv1_stride = 1  #  Stride of the kernel in both conv. layers.
+conv1_stride = 1  # Stride of the kernel in both conv. layers.
 conv2_stride = 1
 conv1_pad = 'VALID'
 conv2_pad = 'VALID'
@@ -27,8 +31,8 @@ pool_size = 5
 max_pool_strides = 5
 
 # Fully connected layers
-n_fc1 = 256  #  Size of the first hidden layer.
-n_fc2 = 128  #  Size of the second hidden layer.
+n_fc1 = 256  # Size of the first hidden layer.
+n_fc2 = 128  # Size of the second hidden layer.
 
 dropout_rate1 = 0.5
 dropout_rate2 = 0.4
@@ -76,7 +80,11 @@ def batch_generator(x1, x2, y, batch_size, how,
 
 
 # Load the dataset still in a list form
+# X1, X2, Y =
+# pickle.load(gzip.open('/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/create_dataset.pkl.gzip', 'r'))
+
 X1, X2, Y = pickle.load(gzip.open('../output/create_dataset.pkl.gzip', 'r'))
+
 # Y = Y.reshape(Y.shape[0], 1)
 
 # Create training, dev and test set
@@ -116,8 +124,8 @@ with tf.name_scope('first_conv'):
                              activation=tf.nn.relu,
                              name='conv1', reuse=True)
 
-# Add a second convolutional layer with the same characteristics as the first one,
-# but twice as many filters
+# Add a second convolutional layer with the same characteristics as the
+# first one, but twice as many filters
 with tf.name_scope('second_conv'):
     conv3 = tf.layers.conv1d(conv1, filters=conv2_fmaps,
                              kernel_size=conv2_ksize,
