@@ -78,6 +78,10 @@ y = interaction_set.interaction.values
 X1 = [uniprot_to_indices[uid] for uid in uid1]
 X2 = [uniprot_to_indices[uid] for uid in uid2]
 
+# Store the length of each protein in the datasets
+len_X1 = np.array([len(x) for x in X1])
+len_X2 = np.array([len(x) for x in X2])
+
 print('Saving the dataset')
-pickle.dump([X1, X2, y],
+pickle.dump([X1, X2, y, len_X1, len_X2],
             gzip.open('../output/create_dataset.pkl.gzip', 'w'))

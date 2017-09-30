@@ -209,7 +209,7 @@ with tf.Session() as sess:
         train_batchgen = batch_generator(X1_train, X2_train,
                                          Y_train, batch_size,
                                          'ohe', 500, 21)
-        # Batch generator for the dev test
+        # Batch generator for the dev set
         dev_batchgen = batch_generator(X1_dev, X2_dev, Y_dev,
                                        batch_size, 'ohe', 500, 21)
 
