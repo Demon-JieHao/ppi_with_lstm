@@ -7,6 +7,11 @@ test_size = 10000
 
 dataset = pd.read_hdf('../output/full_ppi_dataset.hdf5')
 
+# Retain only the canonical aminoacids
+idx1 = dataset.sequence1.apply(lambda x: 'U' not in x)
+idx2 = dataset.sequence2.apply(lambda x: 'U' not in x)
+dataset = dataset.loc[idx1 & idx2]
+
 # Compute the sequence lengths
 len1 = dataset.sequence1.apply(len)
 len2 = dataset.sequence2.apply(len)
