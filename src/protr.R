@@ -47,5 +47,6 @@ proteinFPs <- t(as.data.frame(proteinFPs))
 ### Note that now proteinFPs is a matrix
 save(proteinFPs, file = "../output/proteinFP.RData")
 ### You need a data frame for write_tsv
-proteinFPs <- as.data.frame(proteinFPs)
+proteinFPs <- data.frame(uid = rownames(proteinFPs), proteinFPs,
+                         stringsAsFactors = FALSE)
 readr::write_tsv(proteinFPs, path = "../output/proteinFPs.tsv")
