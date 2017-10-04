@@ -9,7 +9,7 @@ dataset = pd.read_hdf('../output/filtered_ppi_dataset.hdf5')
 
 print('Fitting the tokenizer')
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(['l s a v g e p t r i k f d q n y m h c w u'])
+tokenizer.fit_on_texts(['l s a v g e p t r i k f d q n y m h c w'])
 
 seq_indices1 = dataset.sequence1.apply(
     lambda x: [tokenizer.word_index[c.lower()] for c in x]
