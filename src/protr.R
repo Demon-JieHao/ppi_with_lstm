@@ -20,8 +20,8 @@ createFP <- function(seq) {
         extractCTDC(seq),
         extractCTDT(seq),
         extractCTDD(seq),
-        extractQSO(seq, nlag=25),
-        extractAPAAC(seq, lambda = 25)
+        extractQSO(seq, nlag=20),
+        extractAPAAC(seq, lambda = 20)
         ## extractMoreauBroto(seq),
         ## extractMoran(seq),
         ## qextractGeary(seq),
@@ -43,4 +43,9 @@ createFP <- function(seq) {
 
 proteinFPs <- lapply(seqs, createFP)
 names(proteinFPs) <- uid
+proteinFPs <- t(as.data.frame(proteinFPs))
+### Note that now proteinFPs is a matrix
 save(proteinFPs, file = "../output/proteinFP.RData")
+### You need a data frame for write_tsv
+proteinFPs <- as.data.frame(proteinFPs)
+readr::write_tsv(proteinFPs, path = "../output/proteinFPs.tsv")
