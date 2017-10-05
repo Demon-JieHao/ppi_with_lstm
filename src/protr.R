@@ -1,17 +1,15 @@
 library(protr)
 seqData <- readr::read_tsv("../data/sequences.fa.gz", col_names=FALSE)
 names(seqData) <- c("uid", "sequence")
-seqs <- seqData$sequence
 
 ### Leave only the canonical aminoacids
-idx <- purrr::map_lgl(seqs, ~grepl('U', .x))
-uid <- seqData$uid[!idx]
-seqs <- seqs[!idx]
+idx <- sapply(seqData$sequence, protcheck)
+seqData <- seqData[idx, ]
 
 ### Remove protein sequences that are either too short or too long
-idx <- (nchar(seqs) >= 10) & (nchar(seqs) <= 500)
-seqs <- seqs[idx]
-uid <- uid[idx]
+## seqLen <- sapply(seqData$sequence, nchar)
+## idx <- (seqLen >= 50) & (seqLen <= 1000)
+## seqData <- seqData[idx, ]
 
 createFP <- function(seq) {
     c(
@@ -21,28 +19,34 @@ createFP <- function(seq) {
         extractCTDT(seq),
         extractCTDD(seq),
         extractQSO(seq, nlag=20),
-        extractAPAAC(seq, lambda = 20)
-        ## extractMoreauBroto(seq),
-        ## extractMoran(seq),
-        ## qextractGeary(seq),
-        ## extractCTriad(seq),
-        ## extractSOCN(seq),
-        ## extractPAAC(seq)
-        ## extractPSSM(seq),
-        ## extractPSSMAcc(seq),
-        ## extractPSSMFeature(seq),
-        ## extractScales(seq),
-        ## extractProtFP(seq),
-        ## extractProtFPGap(seq),
-        ## extractDescScales(seq),
-        ## extractFAScales(seq),
-        ## extractMDSScales(seq),
-        # extractBLOSUM(seq)
+        extractAPAAC(seq, lambda = 20),
+        extractMoreauBroto(seq),
+        extractMoran(seq),
+        extractGeary(seq),
+        extractCTriad(seq),
+        extractSOCN(seq),
+        extractPAAC(seq),
+        extractScales(seq,
+                      propmat=t(na.omit(as.matrix(AAindex[, 7:26]))),
+                      pc = 5, lag = 7),
+        extractProtFP(seq, index = c(160:165, 258:296),
+                      pc = 5, lag = 7),
+        extractProtFPGap(seq, index = c(160:165, 258:296),
+                         pc = 5, lag = 7),
+        extractDescScales(seq, propmat = "AATopo",
+                          index = c(37:41, 43:47),
+                          pc = 5, lag = 7),
+        extractFAScales(seq, propmat = AATopo[, c(37:41, 43:47)],
+                        factors = 5, lag = 7),
+        extractMDSScales(seq, propmat = AATopo[, c(37:41, 43:47)],
+                         k = 5, lag = 7),
+        extractBLOSUM(seq, submat = "AABLOSUM62",
+                      k = 5, lag = 7, scale = TRUE)
     )
 }
 
-proteinFPs <- lapply(seqs, createFP)
-names(proteinFPs) <- uid
+proteinFPs <- lapply(seqData$sequence, createFP)
+names(proteinFPs) <- seqData$uid
 proteinFPs <- t(as.data.frame(proteinFPs))
 ### Note that now proteinFPs is a matrix
 save(proteinFPs, file = "../output/proteinFP.RData")
