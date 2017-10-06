@@ -24,7 +24,7 @@ createFP <- function(seq) {
         extractMoran(seq),
         extractGeary(seq),
         extractCTriad(seq),
-        extractSOCN(seq),
+        extractSOCN(seq, nlag=20),
         extractPAAC(seq),
         extractScales(seq,
                       propmat=t(na.omit(as.matrix(AAindex[, 7:26]))),
