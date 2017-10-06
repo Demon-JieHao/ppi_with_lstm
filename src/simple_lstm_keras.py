@@ -2,10 +2,10 @@ import h5py
 from keras.models import Model
 import keras.layers
 
-input_dim = 21
+input_dim = 20
 input_length = 500
 output_dim = 16
-encoding_dim = 32
+encoding_dim = 256
 
 # Shared embedding and LSTM layers
 embedding = keras.layers.Embedding(input_dim=input_dim,
@@ -26,9 +26,11 @@ encoding1 = lstm(embedding1)
 encoding2 = lstm(embedding2)
 
 concatenated = keras.layers.concatenate([encoding1, encoding2], axis=-1)
-hidden1 = keras.layers.Dense(32, activation='relu')(concatenated)
+hidden1 = keras.layers.Dense(256, activation='relu')(concatenated)
 hidden1 = keras.layers.Dropout(0.5)(hidden1)
-predictions = keras.layers.Dense(1, activation='sigmoid')(hidden1)
+hidden2 = keras.layers.Dense(128, activation='relu')(hidden1)
+hidden2 = keras.layers.Dropout(0.5)(hidden2)
+predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
 
 model = Model([input1, input2], predictions)
 
