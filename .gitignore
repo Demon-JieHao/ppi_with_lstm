@@ -10,3 +10,5 @@ src/tf_logs/
 OLD/
 tf_logs/
 src/__pycache__/
+*.stmp
+src/tf_based/

@@ -1,26 +1,19 @@
 import pandas as pd
-from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import Tokenizer
 import h5py
 
 maxlen = 500
 
-dataset = pd.read_hdf('../output/filtered_ppi_dataset.hdf5')
+# Dataset containing the normalized protein fingerprints for all the proteins
+# in Florian's dataset.
+norm_prot_fps = pd.read_hdf('output/normalized_protein_fp.hdf5')
 
-print('Fitting the tokenizer')
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts(['l s a v g e p t r i k f d q n y m h c w'])
+# Dataset containing the protein ID and the sequence for the pairs that pass
+# the filtering, i.e., which have a length between 5 and 500 and without 'U's.
+filtered_pairs = pd.read_hdf('output/filtered_ppi_dataset_500.hdf5')
 
-seq_indices1 = dataset.sequence1.apply(
-    lambda x: [tokenizer.word_index[c.lower()] for c in x]
-)
-seq_indices2 = dataset.sequence2.apply(
-    lambda x: [tokenizer.word_index[c.lower()] for c in x]
-)
-
-x1 = pad_sequences(seq_indices1.tolist(), maxlen=maxlen)
-x2 = pad_sequences(seq_indices2.tolist(), maxlen=maxlen)
-y = dataset.interaction.values
+x1 = norm_prot_fps.loc[filtered_pairs.uid1].values
+x2 = norm_prot_fps.loc[filtered_pairs.uid2].values
+y = filtered_pairs.interaction.values
 
 x1_train = x1[:-10000]
 x2_train = x2[:-10000]
@@ -30,9 +23,8 @@ x1_test = x1[-10000:]
 x2_test = x2[-10000:]
 y_test = y[-10000:]
 
-
 print('Saving the dataset')
-with h5py.File('../output/create_tokenized_dataset.hdf5', 'w') as f:
+with h5py.File('output/create_protein_fp_dataset_500.hdf5', 'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')

@@ -14,9 +14,9 @@ embedding = keras.layers.Embedding(input_dim=input_dim,
 lstm = keras.layers.LSTM(units=encoding_dim)
 
 input1 = keras.layers.Input(shape=(input_length,),
-                            dtype='float32', name='input1')
+                            dtype='int32', name='input1')
 input2 = keras.layers.Input(shape=(input_length,),
-                            dtype='float32', name='input2')
+                            dtype='int32', name='input2')
 
 # Create a shared embedding for the two inputs
 embedding1 = embedding(input1)
@@ -39,7 +39,7 @@ model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['acc'])
 
-with h5py.File('../output/create_tokenized_dataset.hdf5', 'r') as f:
+with h5py.File('../output/create_tokenized_dataset_500.hdf5', 'r') as f:
     x1_train, x2_train, y_train = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_test, x2_test, y_test = (f['test/x1'], f['test/x2'], f['test/y'])
 
