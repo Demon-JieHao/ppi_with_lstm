@@ -4,7 +4,7 @@ import keras.layers
 from keras.models import Model
 
 
-num_shared_hidden_layers = np.arange(1, 5)
+n_shared_hidden_layers = np.arange(1, 5)
 size_shared_hidden_layer = np.array([256, 512])
 learning_rates = np.logspace(-5, -3, 3)
 n_hidden_layers = np.arange(1, 5)
@@ -17,34 +17,43 @@ x1_tr = f['train/x1']
 x2_tr = f['train/x2']
 y_tr = f['train/y']
 
-input_dim = x1_tr.shape[1]
+n_features = x1_tr.shape[1]
 
 
-def mlp_model(input_dim, learning_rate, hidden_layers, dropout, units,
-              shared_units, num_shared_layers):
+def mlp_model(n_shared_layers,
+              shared_units,
+              learning_rate,
+              hidden_layers,
+              units,
+              dropout,
+              input_dim=n_features):
 
     keras.backend.clear_session()
+    shared_layers = {}
+
+    # import ipdb; ipdb.set_trace()
+
     input1 = keras.layers.Input(shape=(input_dim,), name='input1')
     input2 = keras.layers.Input(shape=(input_dim,), name='input2')
 
-    shared_hidden_layer = keras.layers.Dense(units=shared_units,
-                                             activation='relu')
-    shared_hidden_layer2 = keras.layers.Dense(units=shared_units,
+    shared_layers[0] = keras.layers.Dense(units=shared_units,
+                                          activation='relu')
+
+    dense1 = shared_layers[0](input1)
+    dense1 = keras.layers.Dropout(dropout)(dense1)
+    dense2 = shared_layers[0](input2)
+    dense2 = keras.layers.Dropout(dropout)(dense2)
+
+    for k in range(1, n_shared_layers):
+        shared_layers[k] = keras.layers.Dense(units=shared_units,
                                               activation='relu')
+        dense1 = shared_layers[k](dense1)
+        dense1 = keras.layers.Dropout(dropout)(dense1)
+        dense2 = shared_layers[k](dense2)
+        dense2 = keras.layers.Dropout(dropout)(dense2)
 
-    shared_hidden1 = shared_hidden_layer(input1)
-    shared_hidden1 = keras.layers.Dropout(dropout)(shared_hidden1)
-    shared_hidden2 = shared_hidden_layer(input2)
-    shared_hidden2 = keras.layers.Dropout(dropout)(shared_hidden2)
+    hidden = keras.layers.concatenate([dense1, dense2], axis=-1)
 
-    for _ in range(num_shared_layers):
-        shared_hidden1 = shared_hidden_layer2(shared_hidden1)
-        shared_hidden1 = keras.layers.Dropout(dropout)(shared_hidden1)
-        shared_hidden2 = shared_hidden_layer2(shared_hidden2)
-        shared_hidden2 = keras.layers.Dropout(dropout)(shared_hidden2)
-
-    hidden = keras.layers.concatenate([shared_hidden1, shared_hidden2],
-                                      axis=-1)
     for _ in range(hidden_layers):
         hidden = keras.layers.Dense(units, activation='relu')(hidden)
         hidden = keras.layers.Dropout(dropout)(hidden)
@@ -58,41 +67,44 @@ def mlp_model(input_dim, learning_rate, hidden_layers, dropout, units,
     return model
 
 
-for _ in range(24):
+for _ in range(16):
     print("Iteration {}".format(_))
 
-    num_shared_layers = np.random.choice(num_shared_hidden_layers)
+    n_shared_layers = np.random.choice(n_shared_hidden_layers)
     shared_units = np.random.choice(size_shared_hidden_layer)
     learning_rate = np.random.choice(learning_rates)
     hidden_layers = np.random.choice(n_hidden_layers)
-    dropout = np.random.choice(dropout_rate)
     units = np.random.choice(n_units)
+    dropout = np.random.choice(dropout_rate)
 
-    print("N. of shared layers: {}".format(num_shared_layers))
+    print("N. of shared layers: {}".format(n_shared_layers))
     print("N. of shared units : {}".format(shared_units))
+    print("Learning rate      : {}".format(learning_rate))
     print("N. of hidden layers: {}".format(hidden_layers))
     print("N. of hidden units : {}". format(units))
-    print("Learning rate      : {}".format(learning_rate))
     print("Dropout rate       : {}".format(dropout))
 
-    logdir = [str(num_shared_layers), str(shared_units),
-              str(learning_rate), str(hidden_layers), str(dropout),
-              str(units)]
+    logdir = [str(n_shared_layers),
+              str(shared_units),
+              str(learning_rate),
+              str(hidden_layers),
+              str(units),
+              str(dropout)]
     logdir = 'tb_logs/mlp_fp/' + '_'.join(logdir)
 
     tensorboard = [
         keras.callbacks.TensorBoard(log_dir=logdir, histogram_freq=0.1)
         ]
 
-    model = mlp_model(input_dim=input_dim,
-                      num_shared_layers=num_shared_layers,
-                      shared_units=shared_units,
-                      learning_rate=learning_rate,
-                      hidden_layers=hidden_layers,
-                      dropout=dropout,
-                      units=units)
+    model = mlp_model(n_shared_layers,
+                      shared_units,
+                      learning_rate,
+                      hidden_layers,
+                      units,
+                      dropout)
+
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=128,
-              epochs=50,
+              epochs=40,
               validation_split=0.05,
               callbacks=tensorboard)

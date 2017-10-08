@@ -6,8 +6,23 @@ vpath %.py src
 	python3 $<
 	touch $@
 
-all: 	create_tokenized_dataset_500.stmp\
+all:	random_search_embeddings.done\
+	random_search_mlp_protein_fp.done\
+	create_tokenized_dataset_500.stmp\
 	create_protein_fp_dataset_500.stmp
+
+
+# Random search for the embeddings
+random_search_embeddings.done: src/random_search_embeddings.py
+	rm -rf tb_logs/embeddings/*
+	python3 $<
+	touch $@
+
+# Random search for the protein FP
+random_search_mlp_protein_fp.done: src/random_search_mlp_protein_fp.py
+	rm -rf tb_logs/mlp_fp/*
+	python3 $<
+	touch $@
 
 # Create an HDF5 dataset similar to the tokenized dataset 500
 # but using the protein predictors rather than the AA indices.
