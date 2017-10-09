@@ -84,7 +84,7 @@ for _ in range(16):
     print("N. of shared layers: {}".format(n_shared_layers))
     print("N. of shared units : {}".format(shared_units))
     print("N. of hidden layers: {}".format(hidden_layers))
-    print("N. of hidden units : {}". format(units))
+    print("N. of hidden units : {}".format(units))
     print("Learning rate      : {}".format(learning_rate))
     print("Dropout rate       : {}".format(dropout))
     print("Embedding dimension: {}".format(embedding_dim))
