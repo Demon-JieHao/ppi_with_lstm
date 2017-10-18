@@ -15,13 +15,13 @@ all:	random_search_embeddings.done\
 # Random search for the embeddings
 random_search_embeddings.done: src/random_search_embeddings.py
 	rm -rf tb_logs/embeddings/*
-	python3 $<
+	CUDA_VISIBLE_DEVICES=1 python3 $<
 	touch $@
 
 # Random search for the protein FP
 random_search_mlp_protein_fp.done: src/random_search_mlp_protein_fp.py
 	rm -rf tb_logs/mlp_fp/*
-	python3 $<
+	CUDA_VISIBLE_DEVICES=0 python3 $<
 	touch $@
 
 # Create an HDF5 dataset similar to the tokenized dataset 500
