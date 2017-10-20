@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 import pandas as pd
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
@@ -5,8 +6,8 @@ import h5py
 
 maxlen = 500
 
-dataset = pd.read_hdf('
-/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/filtered_ppi_dataset_500.hdf5')
+dataset = pd.read_hdf(
+    '/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/filtered_ppi_dataset_500.hdf5')
 
 print('Fitting the tokenizer')
 tokenizer = Tokenizer()
@@ -19,9 +20,13 @@ seq_indices2 = dataset.sequence2.apply(
     lambda x: [tokenizer.word_index[c.lower()] for c in x]
 )
 
-x1 = pad_sequences(seq_indices1.tolist(), maxlen=maxlen)
-x2 = pad_sequences(seq_indices2.tolist(), maxlen=maxlen)
+x1 = pad_sequences(seq_indices1.tolist(), maxlen=maxlen, value=-1)
+x2 = pad_sequences(seq_indices2.tolist(), maxlen=maxlen, value=-1)
 y = dataset.interaction.values
+
+# Transform the indices in int32 for later use with one_hot
+x1 = x1.astype('int32')
+x2 = x2.astype('int32')
 
 x1_train = x1[:-10000]
 x2_train = x2[:-10000]

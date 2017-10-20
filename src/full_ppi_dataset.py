@@ -1,6 +1,7 @@
 # Create an HDF5 version of the complete PPI dataset, with Uniprot IDs,
 # sequences and interactions.
 # The dataset is already shuffled.
+from __future__ import absolute_import, division, print_function
 import pandas as pd
 
 ppi_data = pd.read_table(
