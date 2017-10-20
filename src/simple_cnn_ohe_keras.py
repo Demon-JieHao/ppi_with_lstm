@@ -5,7 +5,6 @@ import keras.backend as K
 
 
 sequence_length = 500
-embedding_dim = 16
 input_shape = (sequence_length,)
 n_classes = 21
 output_shape = (sequence_length, n_classes)
