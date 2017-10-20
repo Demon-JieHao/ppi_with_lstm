@@ -7,10 +7,12 @@ import os
 
 maxlen = 500
 
+
 ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 
 dataset = pd.read_hdf(
-    os.path.join(ppi_path, 'output/filtered_ppi_dataset_500.hdf5'))
+    os.path.join(ppi_path, 'output/filtered_ppi_dataset_500.hdf5')
+)
 
 print('Fitting the tokenizer')
 tokenizer = Tokenizer()

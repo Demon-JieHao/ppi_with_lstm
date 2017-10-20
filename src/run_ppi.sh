@@ -39,7 +39,8 @@ echo [INFO] [$START] [$STARTDATE] [$$] [$JOB_ID] We got the following cores: $CU
 
 # run your workflow
 # if your workflow is not CUDA based or it's something really custom, please make sure that you pass the GPU cores numbers and use only these inside of your workflow
-python /da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/src/simple_cnn_keras_cluster.py
+python /lustre/scratch/dariogi1/ppi_with_lstm/src/simple_cnn_ohe_keras.py
+
 # grab EXITCODE if needed
 EXITCODE=$?
 

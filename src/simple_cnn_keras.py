@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 import h5py
 from keras.models import Model
 import keras.layers
@@ -42,9 +43,9 @@ predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
 model = Model([input1, input2], predictions)
 
 # adam = keras.optimizers.Adam(lr=0.001)
-rmsprop = keras.optimizers.rmsprop(lr=0.0001)
+# rmsprop = keras.optimizers.rmsprop(lr=0.0001)
 
-model.compile(optimizer='adam',
+model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['acc'])
 
@@ -54,13 +55,14 @@ callback = [
         histogram_freq=0.1)
     ]
 
-with h5py.File('output/create_tokenized_dataset_500.hdf5', 'r') as f:
+with h5py.File(
+        '/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/create_tokenized_dataset_500.hdf5', 'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=128,
-              epochs=70,
+              epochs=10,
               callbacks=callback,
               validation_split=0.05,
               shuffle='batch')
