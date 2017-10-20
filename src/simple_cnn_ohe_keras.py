@@ -16,8 +16,8 @@ output_shape = (sequence_length, n_classes)
 ohe = keras.layers.Lambda(K.one_hot, arguments={'num_classes': n_classes},
                           output_shape=output_shape)
 
-conv = keras.layers.Conv1D(64, 7, activation='relu')
-conv2 = keras.layers.Conv1D(128, 7, activation='relu')
+conv = keras.layers.Conv1D(64, 15, activation='relu')
+conv2 = keras.layers.Conv1D(128, 15, activation='relu')
 
 # Input layers
 input1 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
@@ -31,9 +31,9 @@ embedding2 = ohe(input2)
 
 # First shared convolutional layer
 encoding1 = conv(embedding1)
-encoding1 = keras.layers.MaxPooling1D(5)(encoding1)
+encoding1 = keras.layers.MaxPooling1D(7)(encoding1)
 encoding2 = conv(embedding2)
-encoding2 = keras.layers.MaxPooling1D(5)(encoding2)
+encoding2 = keras.layers.MaxPooling1D(7)(encoding2)
 
 # Second shared convolutional layer
 encoding1 = conv2(encoding1)
@@ -51,17 +51,17 @@ predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
 model = Model([input1, input2], predictions)
 
 # adam = keras.optimizers.Adam(lr=0.001)
-rmsprop = keras.optimizers.rmsprop(lr=0.0001)
+# rmsprop = keras.optimizers.rmsprop(lr=0.0001)
 
-model.compile(optimizer='adam',
+model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['acc'])
 
-# callback = [
-#     keras.callbacks.TensorBoard(
-#         log_dir='tb_logs/cnn1d',
-#         histogram_freq=0.1)
-#     ]
+callback = [
+    keras.callbacks.TensorBoard(
+        log_dir='/lustre/scratch/dariogi1/ppi_with_lstm/tb_logs/cnn1d',
+        histogram_freq=1.0)
+]
 
 with h5py.File(
         os.path.join(ppi_path, 'output/create_tokenized_dataset_500.hdf5'),
@@ -71,7 +71,7 @@ with h5py.File(
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=128,
-              epochs=1,
-              # callbacks=callback,
+              epochs=30,
+              callbacks=callback,
               validation_split=0.05,
               shuffle='batch')

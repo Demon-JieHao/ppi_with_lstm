@@ -6,7 +6,7 @@
 #$ -binding linear:1
 #$ -cwd
 #$ -S /bin/bash
-#$ -l m_mem_free=1G
+#$ -l m_mem_free=8G
 #$ -l h_rt=3600
 #$ -l gpu_card=1
 #$ -j y
