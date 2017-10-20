@@ -7,17 +7,34 @@ import os
 
 ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 
+# General parameters (don't change them)
 sequence_length = 500
 input_shape = (sequence_length,)
 n_classes = 20
 output_shape = (sequence_length, n_classes)
 
-# Shared embedding and CNN layers
-ohe = keras.layers.Lambda(K.one_hot, arguments={'num_classes': n_classes},
-                          output_shape=output_shape)
+# Model-specific parameters
+n_feature_maps1 = 128
+kernel_width1 = 15
+n_feature_maps2 = 128
+kernel_width2 = 15
+pooling_window1 = 7
+pooling_window2 = 7
 
-conv = keras.layers.Conv1D(64, 15, activation='relu')
-conv2 = keras.layers.Conv1D(128, 15, activation='relu')
+tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn'),
+                    str(kernel_width1),
+                    str(pooling_window1),
+                    str(kernel_width2),
+                    str(pooling_window2)
+])
+
+# Shared embedding and CNN layers
+one_hot_encoder = keras.layers.Lambda(K.one_hot,
+                                      arguments={'num_classes': n_classes},
+                                      output_shape=output_shape)
+
+conv1 = keras.layers.Conv1D(n_feature_maps1, kernel_width1, activation='relu')
+conv2 = keras.layers.Conv1D(n_feature_maps2, kernel_width2, activation='relu')
 
 # Input layers
 input1 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
@@ -26,22 +43,27 @@ input2 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
                             name='input2')
 
 # Shared embeddings for the two inputs
-embedding1 = ohe(input1)
-embedding2 = ohe(input2)
+embedding1 = one_hot_encoder(input1)
+embedding2 = one_hot_encoder(input2)
 
 # First shared convolutional layer
-encoding1 = conv(embedding1)
-encoding1 = keras.layers.MaxPooling1D(7)(encoding1)
-encoding2 = conv(embedding2)
-encoding2 = keras.layers.MaxPooling1D(7)(encoding2)
+encoding1 = conv1(embedding1)
+encoding1 = keras.layers.MaxPooling1D(pooling_window1)(encoding1)
+encoding2 = conv1(embedding2)
+encoding2 = keras.layers.MaxPooling1D(pooling_window1)(encoding2)
 
 # Second shared convolutional layer
 encoding1 = conv2(encoding1)
-encoding1 = keras.layers.GlobalMaxPooling1D()(encoding1)
+encoding1 = keras.layers.MaxPooling1D(pooling_window2)(encoding1)
 encoding2 = conv2(encoding2)
-encoding2 = keras.layers.GlobalMaxPooling1D()(encoding2)
+encoding2 = keras.layers.MaxPooling1D(pooling_window2)(encoding2)
 
+# Flatten the two branches and concatenate
+encoding1 = keras.layers.Flatten()(encoding1)
+encoding2 = keras.layers.Flatten()(encoding2)
 concatenated = keras.layers.concatenate([encoding1, encoding2], axis=-1)
+
+# Add fully connected layers to the concatenated tensors
 hidden1 = keras.layers.Dense(512, activation='relu')(concatenated)
 hidden1 = keras.layers.Dropout(0.4)(hidden1)
 hidden2 = keras.layers.Dense(512, activation='relu')(hidden1)
