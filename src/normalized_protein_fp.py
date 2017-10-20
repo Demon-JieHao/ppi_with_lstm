@@ -6,7 +6,7 @@ import os
 ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 
 protein_fp = pd.read_table(
-    os.path.join(ppi_path, 'output/proteinFPs.tsv.gz'),
+    os.path.join(ppi_path, 'data/proteinFPs.tsv.gz'),
     sep='\t', index_col=0
 )
 vals = protein_fp.values
