@@ -15,17 +15,25 @@ output_shape = (sequence_length, n_classes)
 
 # Model-specific parameters
 n_feature_maps1 = 128
-kernel_width1 = 15
-n_feature_maps2 = 128
-kernel_width2 = 15
-pooling_window1 = 7
-pooling_window2 = 7
+kernel_width1 = 7
+n_feature_maps2 = 256
+kernel_width2 = 7
+pooling_window1 = 3
+pooling_window2 = 3
+n_hidden_units1 = 512
+n_hidden_units2 = 512
+dropout_rate1 = 0.5
+dropout_rate2 = 0.5
 
 tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn'),
                     str(kernel_width1),
                     str(pooling_window1),
                     str(kernel_width2),
-                    str(pooling_window2)
+                    str(pooling_window2),
+                    str(n_hidden_units1),
+                    str(dropout_rate1),
+                    str(n_hidden_units2),
+                    str(dropout_rate2)
 ])
 
 # Shared embedding and CNN layers
@@ -64,26 +72,19 @@ encoding2 = keras.layers.Flatten()(encoding2)
 concatenated = keras.layers.concatenate([encoding1, encoding2], axis=-1)
 
 # Add fully connected layers to the concatenated tensors
-hidden1 = keras.layers.Dense(512, activation='relu')(concatenated)
-hidden1 = keras.layers.Dropout(0.4)(hidden1)
-hidden2 = keras.layers.Dense(512, activation='relu')(hidden1)
-hidden2 = keras.layers.Dropout(0.4)(hidden2)
+hidden1 = keras.layers.Dense(n_hidden_units1, activation='relu')(concatenated)
+hidden1 = keras.layers.Dropout(dropout_rate1)(hidden1)
+hidden2 = keras.layers.Dense(n_hidden_units2, activation='relu')(hidden1)
+hidden2 = keras.layers.Dropout(dropout_rate2)(hidden2)
 predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
 
 model = Model([input1, input2], predictions)
 
-# adam = keras.optimizers.Adam(lr=0.001)
-# rmsprop = keras.optimizers.rmsprop(lr=0.0001)
-
-model.compile(optimizer='rmsprop',
+model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['acc'])
 
-callback = [
-    keras.callbacks.TensorBoard(
-        log_dir='/lustre/scratch/dariogi1/ppi_with_lstm/tb_logs/cnn1d',
-        histogram_freq=1.0)
-]
+callback = [keras.callbacks.TensorBoard(log_dir=tb_path, histogram_freq=1.0)]
 
 with h5py.File(
         os.path.join(ppi_path, 'output/create_tokenized_dataset_500.hdf5'),
