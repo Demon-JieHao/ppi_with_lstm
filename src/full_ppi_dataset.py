@@ -3,8 +3,10 @@
 # The dataset is already shuffled.
 import pandas as pd
 
-ppi_data = pd.read_table('data/ppi_testset.txt.gz', header=None,
-                         names=['uniprot_id1', 'uniprot_id2', 'interaction'])
+ppi_data = pd.read_table(
+    '/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/data/ppi_testset.txt.gz',
+    header=None,
+    names=['uniprot_id1', 'uniprot_id2', 'interaction'])
 sequences = pd.Series.from_csv('data/sequences.fa.gz', header=None,
                                index_col=0, sep='\t')
 

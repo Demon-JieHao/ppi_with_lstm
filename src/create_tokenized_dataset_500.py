@@ -5,7 +5,8 @@ import h5py
 
 maxlen = 500
 
-dataset = pd.read_hdf('output/filtered_ppi_dataset_500.hdf5')
+dataset = pd.read_hdf('
+/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/filtered_ppi_dataset_500.hdf5')
 
 print('Fitting the tokenizer')
 tokenizer = Tokenizer()
@@ -32,7 +33,8 @@ y_test = y[-10000:]
 
 
 print('Saving the dataset')
-with h5py.File('output/create_tokenized_dataset_500.hdf5', 'w') as f:
+with h5py.File(
+        '/da/dmp/cb/dariogi1/projects/2017/squads/ppi_with_lstm/output/create_tokenized_dataset_500.hdf5', 'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')
