@@ -2,11 +2,13 @@ import h5py
 from keras.models import Model
 import keras.layers
 import keras.backend as K
+import os
 
+ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 
 sequence_length = 500
 input_shape = (sequence_length,)
-n_classes = 21
+n_classes = 20
 output_shape = (sequence_length, n_classes)
 
 # Shared embedding and CNN layers
@@ -17,9 +19,9 @@ conv = keras.layers.Conv1D(64, 7, activation='relu')
 conv2 = keras.layers.Conv1D(128, 7, activation='relu')
 
 # Input layers
-input1 = keras.layers.Input(shape=(sequence_length,), dtype='uint8',
+input1 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
                             name='input1')
-input2 = keras.layers.Input(shape=(sequence_length,), dtype='uint8',
+input2 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
                             name='input2')
 
 # Shared embeddings for the two inputs
@@ -60,13 +62,15 @@ model.compile(optimizer='adam',
 #         histogram_freq=0.1)
 #     ]
 
-with h5py.File('output/create_tokenized_dataset_500.hdf5', 'r') as f:
+with h5py.File(
+        os.path.join(ppi_path, 'output/create_tokenized_dataset_500.hdf5'),
+    'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=128,
-              epochs=2,
+              epochs=1,
               # callbacks=callback,
               validation_split=0.05,
               shuffle='batch')
