@@ -5,7 +5,8 @@ import os
 
 maxlen = 500
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 # Dataset containing the normalized protein fingerprints for all the proteins
 # in Florian's dataset.
@@ -34,7 +35,7 @@ y_test = y[-10000:]
 print('Saving the dataset')
 with h5py.File(
         os.path.join(ppi_path, 'output/create_protein_fp_dataset_500.hdf5'),
-    'w') as f:
+        'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')

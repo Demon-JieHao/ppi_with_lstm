@@ -5,9 +5,11 @@ from __future__ import absolute_import, division, print_function
 import pandas as pd
 import os
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
-ppi_data = pd.read_table(os.path.join(ppi_path, 'data/ppi_testset.txt.gz'),
+ppi_data = pd.read_table(
+    os.path.join(ppi_path, 'data/ppi_testset.txt.gz'),
     header=None, names=['uniprot_id1', 'uniprot_id2', 'interaction'])
 sequences = pd.Series.from_csv(os.path.join(ppi_path, 'data/sequences.fa.gz'),
                                header=None, index_col=0, sep='\t')

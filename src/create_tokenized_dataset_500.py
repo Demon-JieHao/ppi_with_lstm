@@ -7,7 +7,8 @@ import os
 
 
 maxlen = 500
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 dataset = pd.read_hdf(
     os.path.join(ppi_path, 'output/filtered_ppi_dataset_500.hdf5')
@@ -17,8 +18,8 @@ dataset = pd.read_hdf(
 # This differs from the behavior of Keras' tokenizer, that reserves zero for
 # special purposes. To make things work we pad the sequences with -1, following
 # the examle in TensorFlow tf.one_hot function.
-aas = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R',
-       'S', 'T', 'V', 'W', 'Y']
+aas = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+       'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
 aa_idx = list(range(len(aas)))
 aa_mapping = dict(zip(aas, aa_idx))
 

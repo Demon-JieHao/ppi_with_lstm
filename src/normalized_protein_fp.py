@@ -3,7 +3,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import os
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 protein_fp = pd.read_table(
     os.path.join(ppi_path, 'data/proteinFPs.tsv.gz'),
