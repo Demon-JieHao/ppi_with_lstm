@@ -5,11 +5,11 @@ import keras.layers
 
 sequence_length = 500
 embedding_dim = 16
-gru_units = 64
+lstm_units = 32
 
-# Shared embedding and GRU layers
+# Shared embedding and LSTM layers
 embedding = keras.layers.Embedding(input_dim=21, output_dim=embedding_dim)
-gru = keras.layers.GRU(units=gru_units)
+lstm = keras.layers.LSTM(units=lstm_units)
 
 input1 = keras.layers.Input(shape=(sequence_length,), name='input1')
 input2 = keras.layers.Input(shape=(sequence_length,), name='input2')
@@ -21,15 +21,15 @@ embedding2 = embedding(input2)
 # encoding1 = keras.layers.Flatten()(embedding1)
 # encoding2 = keras.layers.Flatten()(embedding2)
 
-encoding1 = gru(embedding1)
-encoding2 = gru(embedding2)
+encoding1 = lstm(embedding1)
+encoding2 = lstm(embedding2)
 
 concatenated = keras.layers.concatenate([encoding1, encoding2], axis=-1)
-hidden1 = keras.layers.Dense(128, activation='relu')(concatenated)
-hidden1 = keras.layers.Dropout(0.5)(hidden1)
-hidden2 = keras.layers.Dense(64, activation='relu')(hidden1)
-hidden2 = keras.layers.Dropout(0.5)(hidden2)
-predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
+hidden1 = keras.layers.Dense(64, activation='relu')(concatenated)
+hidden1 = keras.layers.Dropout(0.2)(hidden1)
+# hidden2 = keras.layers.Dense(64, activation='relu')(hidden1)
+# hidden2 = keras.layers.Dropout(0.5)(hidden2)
+predictions = keras.layers.Dense(1, activation='sigmoid')(hidden1)
 
 model = Model([input1, input2], predictions)
 
@@ -41,7 +41,7 @@ model.compile(optimizer=adam,
 
 # callback = [
 #     keras.callbacks.TensorBoard(
-#         log_dir='tb_logs/gru',
+#         log_dir='tb_logs/lstm',
 #         histogram_freq=0.1)
 #     ]
 
@@ -50,7 +50,7 @@ with h5py.File('output/create_tokenized_dataset_500.hdf5', 'r') as f:
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
-              batch_size=128,
+              batch_size=256,
               epochs=3,
               # callbacks=callback,
               validation_split=0.05),
