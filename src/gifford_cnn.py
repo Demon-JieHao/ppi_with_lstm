@@ -15,25 +15,15 @@ output_shape = (sequence_length, n_classes)
 
 # Model-specific parameters
 n_feature_maps1 = 128
-kernel_width1 = 7
-n_feature_maps2 = 256
-kernel_width2 = 7
-pooling_window1 = 3
-pooling_window2 = 3
-n_hidden_units1 = 512
-n_hidden_units2 = 512
+kernel_width1 = 24
+n_hidden_units1 = 32
 dropout_rate1 = 0.5
-dropout_rate2 = 0.5
 
 tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn'),
                     str(kernel_width1),
                     str(pooling_window1),
-                    str(kernel_width2),
-                    str(pooling_window2),
                     str(n_hidden_units1),
-                    str(dropout_rate1),
-                    str(n_hidden_units2),
-                    str(dropout_rate2)
+                    str(dropout_rate1)
 ])
 
 # Shared embedding and CNN layers
@@ -54,29 +44,19 @@ input2 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
 embedding1 = one_hot_encoder(input1)
 embedding2 = one_hot_encoder(input2)
 
-# First shared convolutional layer
 encoding1 = conv1(embedding1)
-encoding1 = keras.layers.MaxPooling1D(pooling_window1)(encoding1)
+encoding1 = keras.layers.GlobalMaxPooling1D()(encoding1)
 encoding2 = conv1(embedding2)
-encoding2 = keras.layers.MaxPooling1D(pooling_window1)(encoding2)
+encoding2 = keras.layers.GlobalMaxPooling1D()(encoding2)
 
-# Second shared convolutional layer
-encoding1 = conv2(encoding1)
-encoding1 = keras.layers.MaxPooling1D(pooling_window2)(encoding1)
-encoding2 = conv2(encoding2)
-encoding2 = keras.layers.MaxPooling1D(pooling_window2)(encoding2)
-
-# Flatten the two branches and concatenate
-encoding1 = keras.layers.Flatten()(encoding1)
-encoding2 = keras.layers.Flatten()(encoding2)
 concatenated = keras.layers.concatenate([encoding1, encoding2], axis=-1)
 
 # Add fully connected layers to the concatenated tensors
 hidden1 = keras.layers.Dense(n_hidden_units1, activation='relu')(concatenated)
 hidden1 = keras.layers.Dropout(dropout_rate1)(hidden1)
-hidden2 = keras.layers.Dense(n_hidden_units2, activation='relu')(hidden1)
-hidden2 = keras.layers.Dropout(dropout_rate2)(hidden2)
-predictions = keras.layers.Dense(1, activation='sigmoid')(hidden2)
+# hidden2 = keras.layers.Dense(n_hidden_units2, activation='relu')(hidden1)
+# hidden2 = keras.layers.Dropout(dropout_rate2)(hidden2)
+predictions = keras.layers.Dense(1, activation='sigmoid')(hidden1)
 
 model = Model([input1, input2], predictions)
 
