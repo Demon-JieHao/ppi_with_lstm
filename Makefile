@@ -6,9 +6,16 @@ vpath %.py src
 	python $<
 	touch $@
 
-all: 	create_tokenized_dataset_500.stmp\
+all:	random_forest_on_protein_fps.stmp\
+	create_tokenized_dataset_500.stmp\
 	create_protein_fp_dataset_500.stmp
 
+
+# Run a RF classifier
+random_forest_on_protein_fps.stmp: create_random_forest_dataset.stmp
+
+# Create a protein FP dataset suitable for a random forest classifier
+create_random_forest_dataset.stmp: normalized_protein_fp.stmp
 
 # Create an HDF5 dataset similar to the tokenized dataset 500
 # but using the protein predictors rather than the AA indices.

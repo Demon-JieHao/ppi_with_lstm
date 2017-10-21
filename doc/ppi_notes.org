@@ -1,5 +1,32 @@
 * Notes on the PPI Analysis
 
 ** Embedding and LSTMs
-
 I spent some time trying to understand whether I should use a one-hot encoding or an embedding layer. In the end it seems to me that the two things are very similar. In principle one could hard-code an embedding layer that maps each index to a one-hot encoded vector, and make it non-trainable. This should obtain the same results as a one-hot encoded input. If we decide to go for an embedding layer, the question is what dimension should it have. We may decide to preserve the original dimension, compress it, or even expand it.
+
+One important difference is how the initial encoding is performed. By default, the text processing utilities of Keras encode words starting from 1, because zero is a reserved word. This makes sense for NLP datasets, but maybe not so much for the PPI one.
+
+*** Update on <2017-10-21 Sat>
+After creating the =cluster= and =bimbo= branches, which should be as similar as possible, but will have different paths, I have opted for the following option:
+
+1. Aminoacids are mapped starting from zero.
+2. Sequences are padded with -1, rather than the default zero. This is based on the examples in the =tf.one_hot= function in TensorFlow, where by using -1 as the padding value, and the values from 0 to =n_classes= - 1 as the =on_values=, we obtain the correct format. In other words, with this trick, the one-hot encoded padded sequences contain only zeros.
+
+** Size of the datasets
+There is an important difference in the size of the sequence-based datasets and the protein FP-based ones. In both cases we consider a training set containing all the pairs except the last 10,000, that form the test set. However, the sequence-based has a 5% of the training set that goes into the validation set (roughly 13,000 pairs), while the protein FP does not. This may give a slight advantage to the protein FP approach with Random Forests. Note, however, that in our random search on the protein FPs, this was not an issue, because we applied the same =validation_split= as in the sequence-based networks.
+
+** Classification reports for a RF (no cross validation)
+I have trained a random forest without trying to fine-tune the parameters. The results below refer to the classification report on the training set of 10000 observations. As we can see, the dataset is slightly unbalanced in favor of the interacting pairs.
+
+             precision    recall  f1-score   support
+
+          0       0.81      0.88      0.84      4317
+          1       0.90      0.84      0.87      5683
+
+avg / total       0.86      0.86      0.86     10000
+
+
+
+** TODO Classification reports on the best performing models
+
+** Gifford networks
+

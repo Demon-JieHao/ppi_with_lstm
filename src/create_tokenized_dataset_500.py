@@ -47,7 +47,7 @@ print('Saving the dataset')
 with h5py.File(
         os.path.join(ppi_path, 'output/create_tokenized_dataset_500.hdf5'), 'w'
 ) as f:
-    
+
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')
     x2_tr = f.create_dataset('train/x2', x2_train.shape, dtype=x2.dtype,

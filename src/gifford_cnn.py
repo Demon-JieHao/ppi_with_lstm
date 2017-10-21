@@ -5,9 +5,10 @@ import keras.layers
 import keras.backend as K
 import os
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
-# General parameters (don't change them)
+# General parameters (don't change these)
 sequence_length = 500
 input_shape = (sequence_length,)
 n_classes = 20
@@ -21,10 +22,8 @@ dropout_rate1 = 0.5
 
 tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn'),
                     str(kernel_width1),
-                    str(pooling_window1),
                     str(n_hidden_units1),
-                    str(dropout_rate1)
-])
+                    str(dropout_rate1)])
 
 # Shared embedding and CNN layers
 one_hot_encoder = keras.layers.Lambda(K.one_hot,
@@ -32,7 +31,6 @@ one_hot_encoder = keras.layers.Lambda(K.one_hot,
                                       output_shape=output_shape)
 
 conv1 = keras.layers.Conv1D(n_feature_maps1, kernel_width1, activation='relu')
-conv2 = keras.layers.Conv1D(n_feature_maps2, kernel_width2, activation='relu')
 
 # Input layers
 input1 = keras.layers.Input(shape=(sequence_length,), dtype='int32',
