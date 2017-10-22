@@ -24,9 +24,19 @@ I have trained a random forest without trying to fine-tune the parameters. The r
 
 avg / total       0.86      0.86      0.86     10000
 
+** Things to do
 
+*** TODO Pass the =ppi_path= as a command line argument
+Include in the Makefile a variable with the =ppi_path=. This should be passed as a command line argument to each function.
 
-** TODO Classification reports on the best performing models
+*** TODO Pass the =max_len= parameter as a command line argument
+It should be easy to re-run everything with a different value of the max length. Pass it to =argv=.
+
+*** TODO Put an LSTM on top of the CNN(s)
+
+*** TODO Add an attention mechanism
+
+*** TODO Classification reports on the best performing models
 
 ** Gifford networks
 
