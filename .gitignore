@@ -1,4 +1,5 @@
 *~
+tb_logs/
 data/
 output/
 *.hdf5

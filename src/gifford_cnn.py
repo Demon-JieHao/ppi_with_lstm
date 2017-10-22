@@ -17,10 +17,10 @@ output_shape = (sequence_length, n_classes)
 # Model-specific parameters
 n_feature_maps1 = 128
 kernel_width1 = 24
-n_hidden_units1 = 32
-dropout_rate1 = 0.5
+n_hidden_units1 = 64
+dropout_rate1 = 0.4
 
-tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn'),
+tb_path = '_'.join([os.path.join(ppi_path, 'tb_logs/cnn1d/'),
                     str(kernel_width1),
                     str(n_hidden_units1),
                     str(dropout_rate1)])
@@ -66,7 +66,7 @@ callback = [keras.callbacks.TensorBoard(log_dir=tb_path, histogram_freq=1.0)]
 
 with h5py.File(
         os.path.join(ppi_path, 'output/create_tokenized_dataset_500.hdf5'),
-    'r') as f:
+        'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 

@@ -6,10 +6,16 @@ vpath %.py src
 	python $<
 	touch $@
 
-all:	random_forest_on_protein_fps.stmp\
+all:	random_search_cnn.done\
+	random_forest_on_protein_fps.stmp\
 	create_tokenized_dataset_500.stmp\
 	create_protein_fp_dataset_500.stmp
 
+
+# Random search on the 1D CNN models
+random_search_cnn.done: random_search_cnn.py
+	CUDA_VISIBLE_DEVICES=1 python $<
+	touch $@
 
 # Run a RF classifier
 random_forest_on_protein_fps.stmp: create_random_forest_dataset.stmp
