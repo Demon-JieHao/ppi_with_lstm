@@ -5,10 +5,14 @@ from __future__ import absolute_import, division, print_function
 import pandas as pd
 import os
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 
-ppi_data = pd.read_table(os.path.join(ppi_path, 'data/ppi_testset.txt.gz'),
-    header=None, names=['uniprot_id1', 'uniprot_id2', 'interaction'])
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
+
+ppi_data = pd.read_table(
+    os.path.join(ppi_path, 'data/ppi_testset.txt.gz'),
+    header=None, names=['uniprot_id1', 'uniprot_id2', 'interaction']
+)
 sequences = pd.Series.from_csv(os.path.join(ppi_path, 'data/sequences.fa.gz'),
                                header=None, index_col=0, sep='\t')
 
@@ -28,5 +32,13 @@ dataset = pd.DataFrame({
 # Shuffle the dataset
 dataset = dataset.sample(frac=1.0, random_state=42)
 
-dataset.to_hdf(os.path.join(ppi_path, 'output/full_ppi_dataset.hdf5'),
-               key='ppi_data')
+# Compute the length of the sequences
+seq_len = pd.DataFrame({'len1': dataset.sequence1.apply(len),
+                        'len2': dataset.sequence2.apply(len)})
+dataset['mean_len'] = seq_len.mean(axis=1)
+dataset.sort_values(by='mean_len', ascending=True, inplace=True)
+
+dataset.to_hdf(
+    os.path.join(ppi_path, 'output/full_ppi_dataset_master.hdf5'),
+    key='ppi_data'
+)

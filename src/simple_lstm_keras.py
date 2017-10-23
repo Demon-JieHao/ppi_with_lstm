@@ -8,7 +8,9 @@ embedding_dim = 16
 lstm_units = 32
 
 # Shared embedding and LSTM layers
-embedding = keras.layers.Embedding(input_dim=21, output_dim=embedding_dim)
+embedding = keras.layers.Embedding(input_dim=21,
+                                   mask_zero=True,
+                                   output_dim=embedding_dim)
 lstm = keras.layers.LSTM(units=lstm_units)
 
 input1 = keras.layers.Input(shape=(sequence_length,), name='input1')
@@ -45,13 +47,13 @@ model.compile(optimizer=adam,
 #         histogram_freq=0.1)
 # ]
 
-with h5py.File('output/create_tokenized_dataset_500.hdf5', 'r') as f:
+with h5py.File('output/create_tokenized_dataset_500_master.hdf5', 'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
 
-              batch_size=256,
-              epochs=3,
+              batch_size=128,
+              epochs=30,
               # callbacks=callback,
               validation_split=0.05),
