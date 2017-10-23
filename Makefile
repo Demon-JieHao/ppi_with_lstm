@@ -14,7 +14,7 @@ all:	random_search_cnn.done\
 
 # Random search on the 1D CNN models
 random_search_cnn.done: random_search_cnn.py
-	CUDA_VISIBLE_DEVICES=1 python $<
+	CUDA_VISIBLE_DEVICES=0 python $<
 	touch $@
 
 # Run a RF classifier

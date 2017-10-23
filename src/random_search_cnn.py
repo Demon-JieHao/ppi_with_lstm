@@ -8,7 +8,7 @@ from create_cnn_model import cnn_model
 
 ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
-n_classes=20
+n_classes = 20
 sequence_length = 500
 input_shape = (sequence_length,)
 
