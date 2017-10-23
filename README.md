@@ -25,4 +25,4 @@ Florian Kiefer has put together a balanced dataset of protein pairs with a binar
 
 ### Who do I talk to? ###
 
-* Giovanni d'Ario <giovanni.dario@novartis.com>
+* Giovanni d'Ario <giovanni.dario@gmail.com>
