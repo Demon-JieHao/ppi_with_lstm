@@ -30,7 +30,6 @@ dataset = dataset.loc[idx_lenght]
 
 print("{} pairs pass the filtering".format(dataset.shape[0]))
 
-dataset.to_hdf(
-    os.path.join(ppi_path, 'output/filtered_ppi_dataset_500_master.hdf5'),
-    key='filtered_set'
-)
+output_file = '_'.join(['output/filtered_ppi_dataset', str(maxlen),
+                        'master.hdf5'])
+dataset.to_hdf(os.path.join(ppi_path, output_file), key='filtered_set')

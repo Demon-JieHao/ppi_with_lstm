@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 import pandas as pd
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
+import numpy as np
 import h5py
 import os
 
@@ -32,18 +33,27 @@ y = dataset.interaction.values
 x1 = x1.astype('int32')
 x2 = x2.astype('int32')
 
-x1_train = x1[:-n_test_samples]
-x2_train = x2[:-n_test_samples]
-y_train = y[:-n_test_samples]
+# Create training, validation and test set. Note that we cannot use the
+# bottom 5% of the dataset for validation, as this is composed by the
+# longest sequences.
 
-x1_test = x1[-n_test_samples:]
-x2_test = x2[-n_test_samples:]
-y_test = y[-n_test_samples:]
+idx_val_test = np.random.choice(np.arange(y.shape[0]), size=2 * n_test_samples)
+
+x1_val, x2_val, y_val = (x1[idx_val_test[:n_test_samples]],
+                         x2[idx_val_test[:n_test_samples]],
+                         y[idx_val_test[:n_test_samples]])
+x1_test, x2_test, y_test = (x1[idx_val_test[n_test_samples:]],
+                            x2[idx_val_test[n_test_samples:]],
+                            y[idx_val_test[n_test_samples:]])
+x1_train, x2_train, y_train = (np.delete(x1, idx_val_test, axis=0),
+                               np.delete(x2, idx_val_test, axis=0),
+                               np.delete(y, idx_val_test, axis=0))
+
 
 print('Saving the dataset')
-with h5py.File(os.path.join(
-        ppi_path,
-        'output/create_tokenized_dataset_500_master.hdf5'), 'w') as f:
+output_file = '_'.join(['output/create_tokenized_dataset',
+                        str(maxlen), 'master.hdf5'])
+with h5py.File(os.path.join(ppi_path, output_file), 'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')
@@ -54,6 +64,16 @@ with h5py.File(os.path.join(
     x1_tr[...] = x1_train
     x2_tr[...] = x2_train
     y_tr[...] = y_train
+
+    x1_val = f.create_dataset('val/x1', x1_val.shape, dtype=x1.dtype,
+                              compression='gzip')
+    x2_val = f.create_dataset('val/x2', x2_val.shape, dtype=x2.dtype,
+                              compression='gzip')
+    y_val = f.create_dataset('val/y', y_val.shape, dtype=y.dtype,
+                             compression='gzip')
+    x1_val[...] = x1_val
+    x2_val[...] = x2_val
+    y_val[...] = y_val
 
     x1_te = f.create_dataset('test/x1', x1_test.shape, dtype=x1.dtype,
                              compression='gzip')
