@@ -16,9 +16,11 @@ maxlen = args.maxlen
 ppi_path = args.ppi_path
 n_test_samples = 10000
 
-dataset = pd.read_hdf(
-    os.path.join(ppi_path, 'output/filtered_ppi_dataset_500_master.hdf5')
+filtered_ppi_file = os.path.join(
+    ppi_path, ''.join(['output/filtered_ppi_dataset_',
+                       str(maxlen), '_master.hdf5'])
 )
+dataset = pd.read_hdf(filtered_ppi_file)
 
 aas = 'ACDEFGHIKLMNPQRSTVWY'
 tokenizer = Tokenizer(char_level=True)

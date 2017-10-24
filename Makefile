@@ -32,4 +32,4 @@ full_ppi_dataset.stmp:
 
 clean:
 	rm -f *.stmp
-	rm -f output/*
+	rm -f output/*.hdf5

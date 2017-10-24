@@ -2,10 +2,15 @@ from __future__ import absolute_import, division, print_function
 import pandas as pd
 import h5py
 import os
+import argparse
 
-maxlen = 500
+parser = argparse.ArgumentParser()
+parser.add_argument('maxlen', help='maximum protein length', type=int)
+parser.add_argument('ppi_path', help='path to the main folder', type=str)
+args = parser.parse_args()
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+maxlen = args.maxlen
+ppi_path = args.ppi_path
 
 # Dataset containing the normalized protein fingerprints for all the proteins
 # in Florian's dataset.
@@ -31,10 +36,11 @@ x1_test = x1[-10000:]
 x2_test = x2[-10000:]
 y_test = y[-10000:]
 
-print('Saving the dataset')
-with h5py.File(
-        os.path.join(ppi_path, 'output/create_protein_fp_dataset_500.hdf5'),
-    'w') as f:
+output_file = os.path.join(
+    ppi_path, '_'.join('output/create_protein_fp_dataset_', maxlen, '.hdf5')
+)
+print('Saving the dataset in {}'.format(output_file))
+with h5py.File(output_file, 'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')

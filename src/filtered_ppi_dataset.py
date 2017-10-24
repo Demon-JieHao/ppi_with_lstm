@@ -12,9 +12,6 @@ minlen = 50
 maxlen = args.maxlen
 ppi_path = args.ppi_path
 
-# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
-# ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
-
 dataset = pd.read_hdf(
     os.path.join(ppi_path, 'output/full_ppi_dataset_master.hdf5')
 )
