@@ -13,3 +13,4 @@ tf_logs/
 src/__pycache__/
 *.stmp
 src/tf_based/
+tb_logs/
