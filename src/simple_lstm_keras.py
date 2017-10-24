@@ -1,11 +1,15 @@
 import h5py
 from keras.models import Model
 import keras.layers
+import os
 
 
 sequence_length = 500
 embedding_dim = 16
 lstm_units = 32
+
+ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 # Shared embedding and LSTM layers
 embedding = keras.layers.Embedding(input_dim=21,
@@ -47,14 +51,15 @@ model.compile(optimizer=adam,
 #         histogram_freq=0.1)
 # ]
 
-with h5py.File('output/create_tokenized_dataset_500_master.hdf5', 'r') as f:
+data_file = os.path.join(ppi_path, 'output/create_tokenized_dataset_500_master.hdf5')
+with h5py.File(data_file, 'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])
     x1_val, x2_val, y_val = (f['val/x1'], f['val/x2'], f['val/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=32,
-              epochs=1,
+              epochs=3,
               shuffle=False,
               # callbacks=callback,
               validation_data=([x1_val, x2_val], y_val)
