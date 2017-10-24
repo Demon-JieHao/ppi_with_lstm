@@ -53,8 +53,8 @@ with h5py.File('output/create_tokenized_dataset_500_master.hdf5', 'r') as f:
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
-              batch_size=32,
-              epochs=1,
+              batch_size=128,
+              epochs=3,
               shuffle=False,
               # callbacks=callback,
               validation_data=([x1_val, x2_val], y_val)
