@@ -1,5 +1,6 @@
 import h5py
 from keras.models import Model
+from keras.callbacks import TensorBoard
 import keras.layers
 import os
 
@@ -15,7 +16,7 @@ ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 embedding = keras.layers.Embedding(input_dim=21,
                                    mask_zero=True,
                                    output_dim=embedding_dim)
-lstm = keras.layers.LSTM(units=lstm_units)
+lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=lstm_units))
 
 input1 = keras.layers.Input(shape=(sequence_length,), name='input1')
 input2 = keras.layers.Input(shape=(sequence_length,), name='input2')
@@ -45,11 +46,14 @@ model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['acc'])
 
-# callback = [
-#     keras.callbacks.TensorBoard(
-#         log_dir='tb_logs/lstm',
-#         histogram_freq=0.1)
-# ]
+callback = [
+    TensorBoard(
+        log_dir='tb_logs/lstm',
+        #batch_size=64,
+        # write_grads=True,
+        write_graph=False
+    )
+]
 
 data_file = os.path.join(ppi_path, 'output/create_tokenized_dataset_500_master.hdf5')
 with h5py.File(data_file, 'r') as f:
@@ -57,10 +61,10 @@ with h5py.File(data_file, 'r') as f:
     x1_val, x2_val, y_val = (f['val/x1'], f['val/x2'], f['val/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
-    model.fit(x=[x1_tr, x2_tr], y=y_tr,
-              batch_size=128,
-              epochs=3,
+    model.fit(x=[x1_tr[:50000], x2_tr[:50000]], y=y_tr[:50000],
+              batch_size=64,
+              epochs=30,
               shuffle=False,
-              # callbacks=callback,
+              callbacks=callback,
               validation_data=([x1_val, x2_val], y_val)
               )
