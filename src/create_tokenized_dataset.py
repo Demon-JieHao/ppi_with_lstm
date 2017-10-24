@@ -5,12 +5,16 @@ from keras.preprocessing.text import Tokenizer
 import numpy as np
 import h5py
 import os
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('maxlen', help='maximum protein length', type=int)
+parser.add_argument('ppi_path', help='path to the main folder', type=str)
+args = parser.parse_args()
 
+maxlen = args.maxlen
+ppi_path = args.ppi_path
 n_test_samples = 10000
-maxlen = 500
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
-# ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 dataset = pd.read_hdf(
     os.path.join(ppi_path, 'output/filtered_ppi_dataset_500_master.hdf5')

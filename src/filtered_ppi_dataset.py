@@ -1,12 +1,18 @@
 from __future__ import absolute_import, division, print_function
 import pandas as pd
 import os
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('maxlen', help='maximum protein length', type=int)
+parser.add_argument('ppi_path', help='path to the main folder', type=str)
+args = parser.parse_args()
 
 minlen = 50
-maxlen = 500
+maxlen = args.maxlen
+ppi_path = args.ppi_path
 
-ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
 # ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 dataset = pd.read_hdf(
