@@ -9,8 +9,8 @@ import os
 
 n_test_samples = 10000
 maxlen = 500
-# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
-ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
+ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 dataset = pd.read_hdf(
     os.path.join(ppi_path, 'output/filtered_ppi_dataset_500_master.hdf5')
@@ -37,11 +37,12 @@ x2 = x2.astype('int32')
 # bottom 5% of the dataset for validation, as this is composed by the
 # longest sequences.
 
+np.random.seed(42)
 idx_val_test = np.random.choice(np.arange(y.shape[0]), size=2 * n_test_samples)
 
-x1_val, x2_val, y_val = (x1[idx_val_test[:n_test_samples]],
-                         x2[idx_val_test[:n_test_samples]],
-                         y[idx_val_test[:n_test_samples]])
+x1_va, x2_va, y_va = (x1[idx_val_test[:n_test_samples]],
+                      x2[idx_val_test[:n_test_samples]],
+                      y[idx_val_test[:n_test_samples]])
 x1_test, x2_test, y_test = (x1[idx_val_test[n_test_samples:]],
                             x2[idx_val_test[n_test_samples:]],
                             y[idx_val_test[n_test_samples:]])
@@ -65,15 +66,15 @@ with h5py.File(os.path.join(ppi_path, output_file), 'w') as f:
     x2_tr[...] = x2_train
     y_tr[...] = y_train
 
-    x1_val = f.create_dataset('val/x1', x1_val.shape, dtype=x1.dtype,
+    x1_val = f.create_dataset('val/x1', x1_va.shape, dtype=x1.dtype,
                               compression='gzip')
-    x2_val = f.create_dataset('val/x2', x2_val.shape, dtype=x2.dtype,
+    x2_val = f.create_dataset('val/x2', x2_va.shape, dtype=x2.dtype,
                               compression='gzip')
-    y_val = f.create_dataset('val/y', y_val.shape, dtype=y.dtype,
+    y_val = f.create_dataset('val/y', y_va.shape, dtype=y.dtype,
                              compression='gzip')
-    x1_val[...] = x1_val
-    x2_val[...] = x2_val
-    y_val[...] = y_val
+    x1_val[...] = x1_va
+    x2_val[...] = x2_va
+    y_val[...] = y_va
 
     x1_te = f.create_dataset('test/x1', x1_test.shape, dtype=x1.dtype,
                              compression='gzip')

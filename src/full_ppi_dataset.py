@@ -6,8 +6,8 @@ import pandas as pd
 import os
 
 
-# ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
-ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
+ppi_path = '/lustre/scratch/dariogi1/ppi_with_lstm'
+# ppi_path = '/home/giovenko/DeepLearning/ppi_with_lstm'
 
 ppi_data = pd.read_table(
     os.path.join(ppi_path, 'data/ppi_testset.txt.gz'),

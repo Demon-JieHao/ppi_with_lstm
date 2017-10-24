@@ -1,3 +1,4 @@
+tb_logs/
 *~
 data/
 output/
@@ -13,3 +14,4 @@ src/__pycache__/
 *.stmp
 src/tf_based/
 tb_logs/
+gpu_job*
