@@ -46,7 +46,7 @@ predictions = keras.layers.Dense(1, activation='sigmoid')(hidden1)
 
 model = Model([input1, input2], predictions)
 
-adam = keras.optimizers.Adam(lr=0.001)
+# adam = keras.optimizers.Adam(lr=0.001)
 
 model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
@@ -71,12 +71,9 @@ with h5py.File(data_file, 'r') as f:
     x1_val, x2_val, y_val = (f['val/x1'], f['val/x2'], f['val/y'])
     x1_te, x2_te, y_te = (f['test/x1'], f['test/x2'], f['test/y'])
 
-    x1_t, x2_t, y_t = x1_tr[:50000], x2_tr[:50000], y_tr[:50000]
-    x1_v, x2_v, y_v = x1_val[...], x2_val[...], y_val[...]
-
-    model.fit([x1_t, x2_t], y_t,
+    model.fit([x1_tr, x2_tr], y_tr,
               batch_size=batch_size,
               epochs=30,
               shuffle=False,
               # callbacks=callback,
-              validation_data=([x1_v, x2_v], y_v))
+              validation_data=([x1_val, x2_val], y_val))

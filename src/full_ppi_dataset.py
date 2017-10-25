@@ -36,10 +36,10 @@ dataset = pd.DataFrame({
 dataset = dataset.sample(frac=1.0, random_state=42)
 
 # Compute the length of the sequences
-seq_len = pd.DataFrame({'len1': dataset.sequence1.apply(len),
-                        'len2': dataset.sequence2.apply(len)})
-dataset['mean_len'] = seq_len.mean(axis=1)
-dataset.sort_values(by='mean_len', ascending=True, inplace=True)
+# seq_len = pd.DataFrame({'len1': dataset.sequence1.apply(len),
+#                         'len2': dataset.sequence2.apply(len)})
+# dataset['mean_len'] = seq_len.mean(axis=1)
+# dataset.sort_values(by='mean_len', ascending=True, inplace=True)
 
 dataset.to_hdf(
     os.path.join(ppi_path, 'output/full_ppi_dataset_master.hdf5'),
