@@ -38,7 +38,7 @@ def cnn_model(conv_layers,
     # These two parameters must be integer 1-tuples.
     pool_size = (int(size_kernel / 2),)
     size_kernel = (int(size_kernel),)
-    
+
     embedding = keras.layers.Embedding(input_dim=21, output_dim=dim_embedding)
     convolutions = {}
     maxpoolings = {}
