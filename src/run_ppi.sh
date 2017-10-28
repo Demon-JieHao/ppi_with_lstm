@@ -6,8 +6,8 @@
 #$ -binding linear:1
 #$ -cwd
 #$ -S /bin/bash
-#$ -l m_mem_free=8G
-#$ -l h_rt=3600
+#$ -l m_mem_free=4G
+#$ -l h_rt=36000
 #$ -l gpu_card=1
 #$ -j y
 # UGE PARAMETERS END
