@@ -46,7 +46,7 @@ predictions = keras.layers.Dense(1, activation='sigmoid')(hidden1)
 
 model = Model([input1, input2], predictions)
 
-adam = keras.optimizers.Adam(lr=0.001)
+# adam = keras.optimizers.Adam(lr=0.001)
 
 model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
