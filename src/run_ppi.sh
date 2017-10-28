@@ -7,7 +7,7 @@
 #$ -cwd
 #$ -S /bin/bash
 #$ -l m_mem_free=4G
-#$ -l h_rt=36000
+### #$ -l h_rt=36000
 #$ -l gpu_card=1
 #$ -j y
 # UGE PARAMETERS END
@@ -39,7 +39,7 @@ echo [INFO] [$START] [$STARTDATE] [$$] [$JOB_ID] We got the following cores: $CU
 
 # run your workflow
 # if your workflow is not CUDA based or it's something really custom, please make sure that you pass the GPU cores numbers and use only these inside of your workflow
-python /lustre/scratch/dariogi1/ppi_with_lstm/src/simple_lstm_keras.py 500 /lustre/scratch/dariogi1/ppi_with_lstm
+python /lustre/scratch/dariogi1/ppi_with_lstm/src/cnn_bilstm.py 500 /lustre/scratch/dariogi1/ppi_with_lstm
 
 # grab EXITCODE if needed
 EXITCODE=$?

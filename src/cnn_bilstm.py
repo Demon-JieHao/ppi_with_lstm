@@ -4,7 +4,7 @@ from keras import layers
 import os
 import argparse
 from keras import optimizers
-
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 parser = argparse.ArgumentParser()
 parser.add_argument('maxlen', help='maximum protein length', type=int)
@@ -55,15 +55,11 @@ model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['acc'])
 
-# # callback = [
-# #     TensorBoard(
-# #         log_dir='tb_logs/lstm',
-# #         batch_size=batch_size,
-# #         histogram_freq=1.,
-# #         write_grads=True,
-# #         write_graph=False
-# #     )
-# # ]
+callback = [ModelCheckpoint(filepath='models/cnn_bilstm.model',
+                              monitor='val_loss',
+                              save_best_only=True),
+              EarlyStopping(monitor='val_loss', patience=20)
+]
 
 data_file = os.path.join(
     ppi_path, ''.join(['output/create_tokenized_dataset_',
@@ -76,7 +72,7 @@ with h5py.File(data_file, 'r') as f:
 
     model.fit([x1_tr, x2_tr], y_tr,
               batch_size=batch_size,
-              epochs=30,
+              epochs=500,
               shuffle="batch",
-              # callbacks=callback,
+              callbacks=callback,
               validation_data=([x1_val, x2_val], y_val))
