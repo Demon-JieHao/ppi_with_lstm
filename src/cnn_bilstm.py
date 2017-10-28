@@ -76,7 +76,7 @@ with h5py.File(data_file, 'r') as f:
 
     model.fit([x1_tr, x2_tr], y_tr,
               batch_size=batch_size,
-              epochs=50,
+              epochs=30,
               shuffle="batch",
               # callbacks=callback,
               validation_data=([x1_val, x2_val], y_val))
