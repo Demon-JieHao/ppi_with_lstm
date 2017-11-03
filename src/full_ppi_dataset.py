@@ -8,6 +8,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('maxlen', help='maximum protein length', type=int)
 parser.add_argument('ppi_path', help='path to the main folder', type=str)
 args = parser.parse_args()
 ppi_path = args.ppi_path
@@ -42,6 +43,6 @@ dataset = dataset.sample(frac=1.0, random_state=42)
 # dataset.sort_values(by='mean_len', ascending=True, inplace=True)
 
 dataset.to_hdf(
-    os.path.join(ppi_path, 'output/full_ppi_dataset_master.hdf5'),
+    os.path.join(ppi_path, 'output/full_ppi_dataset.hdf5'),
     key='ppi_data'
 )

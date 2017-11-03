@@ -13,7 +13,7 @@ maxlen = args.maxlen
 ppi_path = args.ppi_path
 
 dataset = pd.read_hdf(
-    os.path.join(ppi_path, 'output/full_ppi_dataset_master.hdf5')
+    os.path.join(ppi_path, 'output/full_ppi_dataset.hdf5')
 )
 
 # Retain only the canonical aminoacids
@@ -33,6 +33,5 @@ dataset = dataset.loc[idx_lenght]
 
 print("{} pairs pass the filtering".format(dataset.shape[0]))
 
-output_file = '_'.join(['output/filtered_ppi_dataset', str(maxlen),
-                        'master.hdf5'])
+output_file = '_'.join(['output/filtered_ppi_dataset', str(maxlen), '.hdf5'])
 dataset.to_hdf(os.path.join(ppi_path, output_file), key='filtered_set')

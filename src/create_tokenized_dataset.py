@@ -7,6 +7,7 @@ import h5py
 import os
 import argparse
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('maxlen', help='maximum protein length', type=int)
 parser.add_argument('ppi_path', help='path to the main folder', type=str)
@@ -17,8 +18,8 @@ ppi_path = args.ppi_path
 n_test_samples = 10000
 
 filtered_ppi_file = os.path.join(
-    ppi_path, ''.join(['output/filtered_ppi_dataset_',
-                       str(maxlen), '_master.hdf5'])
+    ppi_path, '_'.join(['output/filtered_ppi_dataset',
+                       str(maxlen), '.hdf5'])
 )
 dataset = pd.read_hdf(filtered_ppi_file)
 
@@ -58,8 +59,10 @@ x1_train, x2_train, y_train = (np.delete(x1, idx_val_test, axis=0),
 
 
 print('Saving the dataset')
-output_file = '_'.join(['output/create_tokenized_dataset',
-                        str(maxlen), 'master.hdf5'])
+output_file = os.path.join(
+    ppi_path, '_'.join(['output/create_tokenized_dataset',
+                       str(maxlen), 'master.hdf5']))
+
 with h5py.File(os.path.join(ppi_path, output_file), 'w') as f:
 
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,

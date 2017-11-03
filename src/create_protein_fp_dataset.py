@@ -15,14 +15,16 @@ ppi_path = args.ppi_path
 # Dataset containing the normalized protein fingerprints for all the proteins
 # in Florian's dataset.
 norm_prot_fps = pd.read_hdf(
-    os.path.join(ppi_path, 'output/normalized_protein_fp.hdf5')
-)
+    os.path.join(
+        ppi_path, '_'.join(
+            ['output/normalized_protein_fp', str(maxlen), '.hdf5'])))
 
 # Dataset containing the protein ID and the sequence for the pairs that pass
 # the filtering, i.e., which have a length between 5 and 500 and without 'U's.
 filtered_pairs = pd.read_hdf(
-    os.path.join(ppi_path, 'output/filtered_ppi_dataset_500.hdf5')
-)
+    os.path.join(
+        ppi_path, '_'.join(
+            ['output/filtered_ppi_dataset', str(maxlen), '.hdf5'])))
 
 x1 = norm_prot_fps.loc[filtered_pairs.uid1].values
 x2 = norm_prot_fps.loc[filtered_pairs.uid2].values
@@ -37,11 +39,11 @@ x2_test = x2[-10000:]
 y_test = y[-10000:]
 
 output_file = os.path.join(
-    ppi_path, '_'.join('output/create_protein_fp_dataset_', maxlen, '.hdf5')
+    ppi_path,
+    '_'.join(['output/create_protein_fp_dataset', str(maxlen), '.hdf5'])
 )
 print('Saving the dataset in {}'.format(output_file))
 with h5py.File(output_file, 'w') as f:
-
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
                              compression='gzip')
     x2_tr = f.create_dataset('train/x2', x2_train.shape, dtype=x2.dtype,
@@ -61,3 +63,4 @@ with h5py.File(output_file, 'w') as f:
     x1_te[...] = x1_test
     x2_te[...] = x2_test
     y_te[...] = y_test
+ter

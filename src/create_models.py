@@ -1,5 +1,8 @@
 from __future__ import print_function, division, absolute_import
+
+import keras.backend
 import keras.layers
+import keras.optimizers
 from keras.models import Model
 from keras.constraints import max_norm
 import keras.backend as K
@@ -128,6 +131,21 @@ def cnn_gru_model(conv_layers,
                   dropout,
                   sequence_length,
                   n_classes):
+    """
+
+    :param conv_layers: Number of convolutional layers in the two branches.
+    :param filters: Number of filters in the convolutional layers.
+    :param size_kernel: Size of the convolutional layer.
+    :param pool_size: Size of the pooling window.
+    :param gru_states:
+    :param learning_rate: Learning rate.
+    :param hidden_layers: Number of hidden layers.
+    :param units: Number of units in the hidden layers.
+    :param dropout: Dropout rate in the hidden layers.
+    :param sequence_length: Maximum length of the input sequences.
+    :param n_classes: Number of classes.
+    :return:
+    """
 
     keras.backend.clear_session()
 
@@ -188,5 +206,126 @@ def cnn_gru_model(conv_layers,
 
     adam = keras.optimizers.Adam(lr=learning_rate)
 
+    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['acc'])
+    return model
+
+
+def mlp_model(n_shared_layers,
+              shared_units,
+              learning_rate,
+              hidden_layers,
+              units,
+              dropout,
+              embedding_dim,
+              input_length=500,
+              input_dim=21):
+    """
+
+    :param n_shared_layers: Number of shared hidden layer in the two branches.
+    :param shared_units: Number of units in the shared hidden layers.
+    :param learning_rate: Learning rate.
+    :param hidden_layers: Number of dense layers after concatenation.
+    :param units: Number of units in the hidden layers.
+    :param dropout: Dropout rate.
+    :param embedding_dim: Embedding dimension.
+    :param input_length: Maximum length of the input sequences.
+    :param input_dim: Number of classes (+ 1).
+    :return: A Keras model.
+    """
+
+    keras.backend.clear_session()
+
+    embedding = keras.layers.Embedding(input_dim=input_dim,
+                                       output_dim=embedding_dim,
+                                       input_length=input_length)
+    shared_layers = {}
+
+    input1 = keras.layers.Input(shape=(input_length,), name='input1')
+    input2 = keras.layers.Input(shape=(input_length,), name='input2')
+
+    embedding1 = embedding(input1)
+    embedding2 = embedding(input2)
+
+    embedding1 = keras.layers.Flatten()(embedding1)
+    embedding2 = keras.layers.Flatten()(embedding2)
+
+    for k in range(n_shared_layers):
+        shared_layers[k] = keras.layers.Dense(units=shared_units,
+                                              activation='relu')
+        embedding1 = shared_layers[k](embedding1)
+        embedding1 = keras.layers.Dropout(dropout)(embedding1)
+        embedding2 = shared_layers[k](embedding2)
+        embedding2 = keras.layers.Dropout(dropout)(embedding2)
+
+    hidden = keras.layers.concatenate([embedding1, embedding2],
+                                      axis=-1)
+    for _ in range(hidden_layers):
+        hidden = keras.layers.Dense(units, activation='relu')(hidden)
+        hidden = keras.layers.Dropout(dropout)(hidden)
+
+    output = keras.layers.Dense(units=1, activation='sigmoid')(hidden)
+
+    model = Model([input1, input2], output)
+
+    adam = keras.optimizers.adam(lr=learning_rate)
+    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['acc'])
+    return model
+
+
+def mlp_fp_model(n_shared_layers,
+                 shared_units,
+                 learning_rate,
+                 hidden_layers,
+                 units,
+                 dropout,
+                 input_dim):
+    """
+    Model constructor for performing random searches on the ProtR FPs.
+
+    :param n_shared_layers: Integer. Number of layers with shared weights in
+                            the two branches.
+    :param shared_units: Integer. Number of units in the shared layers.
+    :param learning_rate: Float. The learning rate.
+    :param hidden_layers: Integer. The number of hidden layers.
+    :param units: Integer. The number of units in the hidden layers.
+    :param dropout: Float. The dropout rate.
+    :param input_dim: Integer. The number of input features.
+    :return:
+    """
+    keras.backend.clear_session()
+    shared_layers = {}
+
+    # import ipdb; ipdb.set_trace()
+
+    input1 = keras.layers.Input(shape=(input_dim,), name='input1')
+    input2 = keras.layers.Input(shape=(input_dim,), name='input2')
+
+    shared_layers[0] = keras.layers.Dense(units=shared_units,
+                                          activation='relu')
+
+    dense1 = shared_layers[0](input1)
+    dense1 = keras.layers.Dropout(dropout)(dense1)
+    dense2 = shared_layers[0](input2)
+    dense2 = keras.layers.Dropout(dropout)(dense2)
+
+    for k in range(1, n_shared_layers):
+        shared_layers[k] = keras.layers.Dense(units=shared_units,
+                                              activation='relu')
+        dense1 = shared_layers[k](dense1)
+        dense1 = keras.layers.Dropout(dropout)(dense1)
+        dense2 = shared_layers[k](dense2)
+        dense2 = keras.layers.Dropout(dropout)(dense2)
+
+    hidden = keras.layers.concatenate([dense1, dense2], axis=-1)
+
+    for _ in range(hidden_layers):
+        hidden = keras.layers.Dense(units, activation='relu')(hidden)
+        hidden = keras.layers.Dropout(dropout)(hidden)
+
+    output = keras.layers.Dense(units=1, activation='sigmoid')(hidden)
+
+    model = Model([input1, input2], output)
+
+    adam = keras.optimizers.adam(lr=learning_rate)
     model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['acc'])
     return model

@@ -1,8 +1,8 @@
-import numpy as np
 import h5py
 import keras.layers
-from keras.models import Model
+import numpy as np
 
+from .create_models import mlp_fp_model
 
 n_shared_hidden_layers = np.arange(1, 5)
 size_shared_hidden_layer = np.array([256, 512])
@@ -19,54 +19,6 @@ y_tr = f['train/y']
 
 n_features = x1_tr.shape[1]
 
-
-def mlp_model(n_shared_layers,
-              shared_units,
-              learning_rate,
-              hidden_layers,
-              units,
-              dropout,
-              input_dim=n_features):
-
-    keras.backend.clear_session()
-    shared_layers = {}
-
-    # import ipdb; ipdb.set_trace()
-
-    input1 = keras.layers.Input(shape=(input_dim,), name='input1')
-    input2 = keras.layers.Input(shape=(input_dim,), name='input2')
-
-    shared_layers[0] = keras.layers.Dense(units=shared_units,
-                                          activation='relu')
-
-    dense1 = shared_layers[0](input1)
-    dense1 = keras.layers.Dropout(dropout)(dense1)
-    dense2 = shared_layers[0](input2)
-    dense2 = keras.layers.Dropout(dropout)(dense2)
-
-    for k in range(1, n_shared_layers):
-        shared_layers[k] = keras.layers.Dense(units=shared_units,
-                                              activation='relu')
-        dense1 = shared_layers[k](dense1)
-        dense1 = keras.layers.Dropout(dropout)(dense1)
-        dense2 = shared_layers[k](dense2)
-        dense2 = keras.layers.Dropout(dropout)(dense2)
-
-    hidden = keras.layers.concatenate([dense1, dense2], axis=-1)
-
-    for _ in range(hidden_layers):
-        hidden = keras.layers.Dense(units, activation='relu')(hidden)
-        hidden = keras.layers.Dropout(dropout)(hidden)
-
-    output = keras.layers.Dense(units=1, activation='sigmoid')(hidden)
-
-    model = Model([input1, input2], output)
-
-    adam = keras.optimizers.adam(lr=learning_rate)
-    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['acc'])
-    return model
-
-
 for _ in range(16):
     print("Iteration {}".format(_))
 
@@ -81,7 +33,7 @@ for _ in range(16):
     print("N. of shared units : {}".format(shared_units))
     print("Learning rate      : {}".format(learning_rate))
     print("N. of hidden layers: {}".format(hidden_layers))
-    print("N. of hidden units : {}". format(units))
+    print("N. of hidden units : {}".format(units))
     print("Dropout rate       : {}".format(dropout))
 
     logdir = [str(n_shared_layers),
@@ -94,14 +46,15 @@ for _ in range(16):
 
     tensorboard = [
         keras.callbacks.TensorBoard(log_dir=logdir, histogram_freq=0.1)
-        ]
+    ]
 
-    model = mlp_model(n_shared_layers,
-                      shared_units,
-                      learning_rate,
-                      hidden_layers,
-                      units,
-                      dropout)
+    model = mlp_fp_model(n_shared_layers,
+                         shared_units,
+                         learning_rate,
+                         hidden_layers,
+                         units,
+                         dropout,
+                         input_dim=n_features)
 
     model.fit(x=[x1_tr, x2_tr], y=y_tr,
               batch_size=128,

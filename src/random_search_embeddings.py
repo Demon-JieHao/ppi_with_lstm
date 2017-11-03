@@ -1,8 +1,8 @@
-import numpy as np
 import h5py
 import keras.layers
-from keras.models import Model
+import numpy as np
 
+from .create_models import mlp_model
 
 n_shared_hidden_layers = np.arange(1, 5)
 size_shared_hidden_layer = np.array([256, 512])
@@ -19,56 +19,6 @@ x2_tr = f['train/x2']
 y_tr = f['train/y']
 
 input_dim = x1_tr.shape[1]
-
-
-def mlp_model(n_shared_layers,
-              shared_units,
-              learning_rate,
-              hidden_layers,
-              units,
-              dropout,
-              embedding_dim,
-              input_length=500,
-              input_dim=21):
-
-    keras.backend.clear_session()
-
-    embedding = keras.layers.Embedding(input_dim=input_dim,
-                                       output_dim=embedding_dim,
-                                       input_length=input_length)
-    shared_layers = {}
-
-    input1 = keras.layers.Input(shape=(input_length,), name='input1')
-    input2 = keras.layers.Input(shape=(input_length,), name='input2')
-
-    embedding1 = embedding(input1)
-    embedding2 = embedding(input2)
-
-    embedding1 = keras.layers.Flatten()(embedding1)
-    embedding2 = keras.layers.Flatten()(embedding2)
-
-    for k in range(n_shared_layers):
-        shared_layers[k] = keras.layers.Dense(units=shared_units,
-                                              activation='relu')
-        embedding1 = shared_layers[k](embedding1)
-        embedding1 = keras.layers.Dropout(dropout)(embedding1)
-        embedding2 = shared_layers[k](embedding2)
-        embedding2 = keras.layers.Dropout(dropout)(embedding2)
-
-    hidden = keras.layers.concatenate([embedding1, embedding2],
-                                      axis=-1)
-    for _ in range(hidden_layers):
-        hidden = keras.layers.Dense(units, activation='relu')(hidden)
-        hidden = keras.layers.Dropout(dropout)(hidden)
-
-    output = keras.layers.Dense(units=1, activation='sigmoid')(hidden)
-
-    model = Model([input1, input2], output)
-
-    adam = keras.optimizers.adam(lr=learning_rate)
-    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['acc'])
-    return model
-
 
 for _ in range(16):
     print("Iteration {}".format(_))
