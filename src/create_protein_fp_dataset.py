@@ -63,4 +63,3 @@ with h5py.File(output_file, 'w') as f:
     x1_te[...] = x1_test
     x2_te[...] = x2_test
     y_te[...] = y_test
-ter
