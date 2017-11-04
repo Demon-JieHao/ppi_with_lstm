@@ -13,14 +13,15 @@ sequence_length = args.maxlen
 ppi_path = args.ppi_path
 batch_size = 128
 
-callback = [ModelCheckpoint(filepath='models/best_prot_fp_model',
-                            monitor='val_acc',
-                            save_best_only=True),
-            EarlyStopping(monitor='val_acc', patience=10)]
+callback = [ModelCheckpoint(
+    filepath=os.path.join(ppi_path, 'models/best_prot_fp_model'),
+    monitor='val_acc',
+    save_best_only=True),
+    EarlyStopping(monitor='val_acc', patience=10)]
 
 data_file = os.path.join(
     ppi_path, '_'.join(['output/create_protein_fp_dataset',
-                       str(sequence_length), '.hdf5'])
+                        str(sequence_length), '.hdf5'])
 )
 
 with h5py.File(data_file, 'r') as f:
