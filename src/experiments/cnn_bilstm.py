@@ -56,14 +56,13 @@ model.compile(optimizer=adam,
               metrics=['acc'])
 
 callback = [ModelCheckpoint(filepath='models/cnn_bilstm.model',
-                              monitor='val_loss',
-                              save_best_only=True),
-              EarlyStopping(monitor='val_loss', patience=20)
-]
+                            monitor='val_acc',
+                            save_best_only=True),
+            EarlyStopping(monitor='val_acc', patience=20)]
 
 data_file = os.path.join(
     ppi_path, '_'.join(['output/create_tokenized_dataset',
-                       str(sequence_length), '.hdf5'])
+                        str(sequence_length), '.hdf5'])
 )
 with h5py.File(data_file, 'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])

@@ -15,10 +15,11 @@ args = parser.parse_args()
 maxlen = args.maxlen
 ppi_path = args.ppi_path
 
-
+# RF requires the two inputs to be concatenated, therefore we need the
+# 'merged' dataset.
 fp_file = os.path.join(
     ppi_path, '_'.join(
-        ['output/create_random_forest_dataset', str(maxlen), '.hdf5']))
+        ['output/create_protein_fp_dataset', str(maxlen), 'merged.hdf5']))
 
 with h5py.File(os.path.join(fp_file), 'r') as f:
     x_tr, y_tr = f['train/x'], f['train/y']
