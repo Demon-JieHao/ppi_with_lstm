@@ -55,10 +55,11 @@ model.compile(optimizer=adam,
               loss='binary_crossentropy',
               metrics=['acc'])
 
-callback = [ModelCheckpoint(filepath='models/cnn_bilstm.model',
-                            monitor='val_acc',
-                            save_best_only=True),
-            EarlyStopping(monitor='val_acc', patience=20)]
+callback = [ModelCheckpoint(
+    filepath=os.path.join(ppi_path, 'models/cnn_bilstm.model'),
+    monitor='val_acc',
+    save_best_only=True),
+    EarlyStopping(monitor='val_acc', patience=20)]
 
 data_file = os.path.join(
     ppi_path, '_'.join(['output/create_tokenized_dataset',
