@@ -9,9 +9,15 @@ vpath %.py src
 	python $< $(SEQLEN) $(DIR)
 	touch $@
 
-all:	create_tokenized_dataset.stmp\
+all:	create_random_forest_dataset.stmp\
+        create_tokenized_dataset.stmp\
 	    create_protein_fp_dataset.stmp
 
+
+# Create an HDF5 where the protein FP are concatenated. This dataset is used
+# to train a Random Forest and define a baseline.
+create_random_forest_dataset.stmp:  create_protein_fp_dataset.stmp\
+                                    filtered_ppi_dataset.stmp
 
 # Create an HDF5 dataset similar to the tokenized dataset 500
 # but using the protein predictors rather than the AA indices.

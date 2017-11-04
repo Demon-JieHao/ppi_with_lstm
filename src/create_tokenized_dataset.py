@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 import pandas as pd
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
-import numpy as np
 import h5py
 import os
 import argparse
@@ -40,28 +39,22 @@ y = dataset.interaction.values
 x1 = x1.astype('int32')
 x2 = x2.astype('int32')
 
-# Create training, validation and test set. Note that we cannot use the
-# bottom 5% of the dataset for validation, as this is composed by the
-# longest sequences.
+x1_train, x2_train, y_train = (x1[:-(2 * n_test_samples)],
+                               x2[:-(2 * n_test_samples)],
+                               y[:-(2 * n_test_samples)])
 
-np.random.seed(42)
-idx_val_test = np.random.choice(np.arange(y.shape[0]), size=2 * n_test_samples)
+x1_valid, x2_valid, y_valid = (x1[-(2 * n_test_samples):-n_test_samples],
+                               x2[-(2 * n_test_samples):-n_test_samples],
+                               y[-(2 * n_test_samples):-n_test_samples])
 
-x1_va, x2_va, y_va = (x1[idx_val_test[:n_test_samples]],
-                      x2[idx_val_test[:n_test_samples]],
-                      y[idx_val_test[:n_test_samples]])
-x1_test, x2_test, y_test = (x1[idx_val_test[n_test_samples:]],
-                            x2[idx_val_test[n_test_samples:]],
-                            y[idx_val_test[n_test_samples:]])
-x1_train, x2_train, y_train = (np.delete(x1, idx_val_test, axis=0),
-                               np.delete(x2, idx_val_test, axis=0),
-                               np.delete(y, idx_val_test, axis=0))
-
+x1_test, x2_test, y_test = (x1[-n_test_samples:],
+                            x2[-n_test_samples:],
+                            y[-n_test_samples])
 
 print('Saving the dataset')
 output_file = os.path.join(
     ppi_path, '_'.join(['output/create_tokenized_dataset',
-                       str(maxlen), 'master.hdf5']))
+                       str(maxlen), '.hdf5']))
 
 with h5py.File(os.path.join(ppi_path, output_file), 'w') as f:
 
@@ -75,15 +68,15 @@ with h5py.File(os.path.join(ppi_path, output_file), 'w') as f:
     x2_tr[...] = x2_train
     y_tr[...] = y_train
 
-    x1_val = f.create_dataset('val/x1', x1_va.shape, dtype=x1.dtype,
+    x1_val = f.create_dataset('val/x1', x1_valid.shape, dtype=x1.dtype,
                               compression='gzip')
-    x2_val = f.create_dataset('val/x2', x2_va.shape, dtype=x2.dtype,
+    x2_val = f.create_dataset('val/x2', x2_valid.shape, dtype=x2.dtype,
                               compression='gzip')
-    y_val = f.create_dataset('val/y', y_va.shape, dtype=y.dtype,
+    y_val = f.create_dataset('val/y', y_valid.shape, dtype=y.dtype,
                              compression='gzip')
-    x1_val[...] = x1_va
-    x2_val[...] = x2_va
-    y_val[...] = y_va
+    x1_val[...] = x1_valid
+    x2_val[...] = x2_valid
+    y_val[...] = y_valid
 
     x1_te = f.create_dataset('test/x1', x1_test.shape, dtype=x1.dtype,
                              compression='gzip')

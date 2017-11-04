@@ -61,8 +61,8 @@ model.compile(optimizer='rmsprop',
 # ]
 
 data_file = os.path.join(
-    ppi_path, ''.join(['output/create_tokenized_dataset_',
-                       str(sequence_length), '_master.hdf5'])
+    ppi_path, '_'.join(['output/create_tokenized_dataset',
+                       str(sequence_length), '.hdf5'])
 )
 with h5py.File(data_file, 'r') as f:
     x1_tr, x2_tr, y_tr = (f['train/x1'], f['train/x2'], f['train/y'])

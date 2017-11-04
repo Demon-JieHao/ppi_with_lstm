@@ -4,6 +4,7 @@ import h5py
 import os
 import argparse
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('maxlen', help='maximum protein length', type=int)
 parser.add_argument('ppi_path', help='path to the main folder', type=str)
@@ -30,18 +31,21 @@ x1 = norm_prot_fps.loc[filtered_pairs.uid1].values
 x2 = norm_prot_fps.loc[filtered_pairs.uid2].values
 y = filtered_pairs.interaction.values
 
-x1_train = x1[:-10000]
-x2_train = x2[:-10000]
-y_train = y[:-10000]
+x1_train = x1[:-20000]
+x2_train = x2[:-20000]
+y_train = y[:-20000]
 
 x1_test = x1[-10000:]
 x2_test = x2[-10000:]
 y_test = y[-10000:]
 
+
+
 output_file = os.path.join(
     ppi_path,
     '_'.join(['output/create_protein_fp_dataset', str(maxlen), '.hdf5'])
 )
+
 print('Saving the dataset in {}'.format(output_file))
 with h5py.File(output_file, 'w') as f:
     x1_tr = f.create_dataset('train/x1', x1_train.shape, dtype=x1.dtype,
