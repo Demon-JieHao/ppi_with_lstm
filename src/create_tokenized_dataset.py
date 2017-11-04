@@ -49,7 +49,7 @@ x1_valid, x2_valid, y_valid = (x1[-(2 * n_test_samples):-n_test_samples],
 
 x1_test, x2_test, y_test = (x1[-n_test_samples:],
                             x2[-n_test_samples:],
-                            y[-n_test_samples])
+                            y[-n_test_samples:])
 
 print('Saving the dataset')
 output_file = os.path.join(
