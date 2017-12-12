@@ -31,9 +31,9 @@ filtered_pairs = pd.read_hdf(
         ppi_path, '_'.join(
             ['output/filtered_ppi_dataset', str(maxlen), '.hdf5'])))
 
-x1 = norm_prot_fps.loc[filtered_pairs.uid1].values
-x2 = norm_prot_fps.loc[filtered_pairs.uid2].values
-y = filtered_pairs.interaction.values
+x1 = norm_prot_fps.loc[filtered_pairs.uid1].values.astype('float32')
+x2 = norm_prot_fps.loc[filtered_pairs.uid2].values.astype('float32')
+y = filtered_pairs.interaction.values.astype('float32').reshape(-1, 1)
 
 x1_train = x1[:-20000]
 x2_train = x2[:-20000]
